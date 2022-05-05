@@ -9,12 +9,21 @@ PROCESSI TRENI:
   Le sue operazioni sono:
   - In primis devono prendere il loro cammino dal REGISTRO
   - Una volta preso il cammino devono percorrerlo fino al raggiungimento della stazione di arrivo
-  - * Ogni volta che entrano un segmento devono verificare che sia libero, questo
-    vuol dire controllare il file del segmento associato e verificare che il suo
-    contenuto sia 0
+  - * Ogni volta che entrano un segmento devono verificare che sia libero, la
+    metodologia con la quale si verifica che un segmento è libero o meno dipende
+    dai parametri passati al file, guarda PARAMETRI
   - Se il PROCESSO TRENO arriva alla stazione allora termina
   - Se non è ancora arrivato allora aspetta 3 secondi e poi riparte da *
 
 REGISTRO:
   Ha solo il compito di memorizzare MAPPA1 e MAPPA2 e di rispondere alle richieste
   dei vari PROCESSI TRENI che hanno bisogno del loro cammino
+
+PARAMETRI:
+
+  Il primo parametro decide come verificare l'occupazione di un segmento
+  Il primo parametro può essere ETCS1 o ETCS2.
+  ETCS1: il controllo avviene tramite uno dei 16 file che il PROCESSO PADRE ha
+  creato: se il file contiene 0 allora il segmento è libero, 1 altrimenti
+
+  ETCS2
