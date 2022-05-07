@@ -1,6 +1,7 @@
 #include "stdio.h"
 #include "fcntl.h"
 #include <string.h>
+#include "segmentiManager.h"
 
 #define NUMERO_TRATTE 16
 #define NUMERO_PROCESSI_TRENI 5
@@ -23,20 +24,21 @@ int main() {
 
 void creaFiles() {
 
-  printf("Sto creando i file\n");
   for (int i = 0; i < NUMERO_TRATTE; i++) {
 
-    char *pathName;
-    asprintf(&pathName, "segmenti/MA%d", i);
-    // printf("%s\n", buf);
-    // int file = open(buf, O_CREAT|O_RDWR, 0666);
+    // char *pathName;
+    // asprintf(&pathName, "segmenti/MA%d", i);
+    // // int file = open(buf, O_CREAT|O_RDWR, 0666);
+    //
+    // FILE *file = fopen(pathName, "w+");
+    //
+    // // Inizalizzazione a 0 dei file
+    // fwrite("0", 1, 1, file);
+    //
+    // fclose(file);
+    // chmod(pathName, 0666);
 
-    FILE *file = fopen(pathName, "w+");
-
-    fwrite("0", 1, 1, file);
-
-    fclose(file);
-    chmod(pathName, 0666);
+    creaFileSegmento(i);
 
   }
 
