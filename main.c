@@ -1,6 +1,8 @@
-#include "stdio.h"
-#include "fcntl.h"
+#include <stdio.h>
+#include <fcntl.h>
 #include <string.h>
+#include <unistd.h>
+
 #include "segmentiManager.h"
 
 #define NUMERO_TRATTE 16
@@ -13,30 +15,33 @@ void inizializzaProcessiTreni(void);
 
 int main() {
 
-  // open("cartella/text.txt", O_CREAT|O_RDWR, 0777);
-
-  // FILE *file = fopen("segmenti/segmenti.txt", "w");
-  // fclose(file);
-
   creaFiles();
+
+  for (size_t i = 0; i < 2; i++) {
+
+    // Fai partire i proessi treni
+    int pid = fork();
+    if (pid == 0){
+
+      execl("treno", "2", NULL);
+
+    }
+    else {
+
+      wait(NULL);
+      printf("Sono il padre\n");
+
+    }
+
+  }
+
+  return 0;
 
 }
 
 void creaFiles() {
 
   for (int i = 0; i < NUMERO_TRATTE; i++) {
-
-    // char *pathName;
-    // asprintf(&pathName, "segmenti/MA%d", i);
-    // // int file = open(buf, O_CREAT|O_RDWR, 0666);
-    //
-    // FILE *file = fopen(pathName, "w+");
-    //
-    // // Inizalizzazione a 0 dei file
-    // fwrite("0", 1, 1, file);
-    //
-    // fclose(file);
-    // chmod(pathName, 0666);
 
     creaFileSegmento(i);
 

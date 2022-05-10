@@ -1,4 +1,4 @@
-main: main.o segmentiManager.o
+main: main.o segmentiManager.o treno
 	gcc main.o segmentiManager.o -o main
 
 main.o: main.c segmentiManager.h
@@ -12,3 +12,6 @@ segmentiManager: segmentiManager.c
 
 segmentiManager.o: segmentiManager.c
 	gcc -c segmentiManager.c
+
+treno: treno.c
+	gcc treno.c -o treno
