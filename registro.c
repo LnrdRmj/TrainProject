@@ -8,7 +8,7 @@
 #define NUMERO_TRENI 5
 #define MAX_LUNGHEZZA_CAMMINO 10
 #define PORT 8000
-#define SERVER_NAME "registro"
+#define SERVER_NAME "serveRegistro"
 
 void stampaMappa (const char mappa[NUMERO_TRENI][MAX_LUNGHEZZA_CAMMINO][10]);
 void getCammino(char * [], int);
