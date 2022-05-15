@@ -24,7 +24,6 @@ int main() {
 
   startTreni();
 
-  exit(0);
   return 0;
 
 }
