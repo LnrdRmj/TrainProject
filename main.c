@@ -2,6 +2,7 @@
 #include <fcntl.h>
 #include <string.h>
 #include <unistd.h>
+#include <stdlib.h>
 
 #include "segmentiManager.h"
 
@@ -28,13 +29,14 @@ int main() {
     }
     else {
 
-      wait(NULL);
+      // wait(NULL);
       printf("Sono il padre\n");
 
     }
 
   }
 
+  exit(0);
   return 0;
 
 }

@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <unistd.h>
 
 int main(int argc, char *argv[]) {
 
@@ -8,6 +9,7 @@ int main(int argc, char *argv[]) {
 
   printf("Sono il treno numero %s\n", numTreno);
 
+  exit(0);
   return 0;
 
 }
