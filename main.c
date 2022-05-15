@@ -20,7 +20,7 @@ int main() {
 
   creaFiles();
 
-  startRegistro();
+  // startRegistro();
 
   startTreni();
 
@@ -44,15 +44,16 @@ void startRegistro() {
 
 void startTreni() {
 
-  for (size_t i = 0; i < 2; i++) {
+  for (int i = 0; i < 2; i++) {
 
     // Fai partire i proessi treni
     int pid = fork();
     if (pid == 0){
 
-      char *buf;
-      // asprintf();
-      execl("treno", "2", NULL);
+      char *buffer;
+      asprintf(&buffer, "%i", i);
+
+      execl("treno", buffer, NULL);
 
     }
     else {
