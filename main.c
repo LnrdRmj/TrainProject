@@ -13,10 +13,37 @@
 
 void creaFiles(void);
 void inizializzaProcessiTreni(void);
+void startRegistro(void);
+void startTreni(void);
 
 int main() {
 
   creaFiles();
+
+  startRegistro();
+
+  startTreni();
+
+  exit(0);
+  return 0;
+
+}
+
+void startRegistro() {
+
+  int pid = fork();
+  if (pid == 0) {
+
+    execl("registro", "2", NULL);
+
+  }
+  else {
+    printf("Sono il padre\n");
+  }
+
+}
+
+void startTreni() {
 
   for (size_t i = 0; i < 2; i++) {
 
@@ -24,6 +51,8 @@ int main() {
     int pid = fork();
     if (pid == 0){
 
+      char *buf;
+      // asprintf();
       execl("treno", "2", NULL);
 
     }
@@ -35,9 +64,6 @@ int main() {
     }
 
   }
-
-  exit(0);
-  return 0;
 
 }
 

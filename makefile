@@ -1,4 +1,4 @@
-main: main.o segmentiManager.o treno
+main: main.o segmentiManager.o treno registro
 	gcc main.o segmentiManager.o -o main
 
 main.o: main.c segmentiManager.h
