@@ -14,15 +14,15 @@
 void creaFiles(void);
 void inizializzaProcessiTreni(void);
 void startRegistro(void);
-void startTreni(void);
+void startTreni(char[10]);
 
-int main() {
+int main(int argc, char *argv[]) {
 
   creaFiles();
 
   startRegistro();
 
-  startTreni();
+  startTreni(argv[1]);
 
   return 0;
 
@@ -39,7 +39,9 @@ void startRegistro() {
 
 }
 
-void startTreni() {
+void startTreni(char mappa[10]) {
+
+  printf("I treni usano la mappa %s\n", mappa);
 
   for (int i = 0; i < NUMERO_PROCESSI_TRENI; i++) {
 

@@ -43,7 +43,7 @@ void getCammino(char *numTreno){
 
   char *cammino;
   read(serverFd, cammino, 1024);
-  printf("Il cammino del treno %s e': %s\n", numTreno, cammino);
+  // printf("Il cammino del treno %s e': %s\n", numTreno, cammino);
 
   close(serverFd);
 
