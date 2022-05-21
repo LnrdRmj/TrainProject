@@ -11,7 +11,7 @@
 #define SERVER_NAME "serveRegistro"
 
 void stampaMappa (const char mappa[NUMERO_TRENI][MAX_LUNGHEZZA_CAMMINO][10]);
-void getCammino(char *, int);
+void getCammino(char *, int, char *);
 
 int main() {
 
@@ -28,12 +28,12 @@ int main() {
   // printf("Ho fatto il binding\n");
   bind(serverFd, (struct sockaddr*)&serverAddress, sizeof(serverAddress));
 
-  // printf("Sto ascoltando sulla porta %i\n", PORT);
+  printf("Sto ascoltando sulla porta %i\n", PORT);
   listen(serverFd, NUMERO_TRENI);
 
   int cont = 0;
 
-  while(cont < 5) {
+  while(cont < 1) {
 
     struct sockaddr_un clientAddress;
     int clientLen = sizeof(clientAddress);
@@ -43,14 +43,21 @@ int main() {
 
     char buffer[1024];
     read(clientFd, buffer, 1024);
+    // int numeroTreno = atoi(buffer);
+    // printf("numero treno 2\n");
+    printf("ciao1");
 
-    int numeroTreno = atoi(buffer);
+    char mappa[1024];
+    printf("ciao2");
+    read(clientFd, buffer, 1024);
+    printf("La mappa del registro è %s", buffer);
+
     // printf("%i\n", numeroTreno);
 
     char *cammino = malloc( MAX_LUNGHEZZA_CAMMINO );
-    getCammino(cammino, numeroTreno);
+    // getCammino(cammino, numeroTreno, "MAPPA1");
 
-    write(clientFd, cammino, MAX_LUNGHEZZA_CAMMINO);
+    write(clientFd, &"cammino", MAX_LUNGHEZZA_CAMMINO);
 
     close(clientFd);
 
@@ -64,7 +71,7 @@ int main() {
 
 }
 
-void getCammino(char* cammino, int treno){
+void getCammino(char* cammino, int treno, char* mappa){
 
   // return (char**)malloc(2 * sizeof(char *));
   // return mappa1[];
@@ -86,9 +93,18 @@ void getCammino(char* cammino, int treno){
   };
 
   int i = 0;
-  while(mappa1[treno][i] != '\0'){
-    cammino[i] = mappa1[treno][i];
-    ++i;
+
+  if (strcmp(mappa, "MAPPA1") == 0){
+    while(mappa1[treno][i] != '\0'){
+      cammino[i] = mappa1[treno][i];
+      ++i;
+    }
+  }
+  else if(strcmp(mappa, "MAPPA2") == 0){
+    while(mappa2[treno][i] != '\0'){
+      cammino[i] = mappa1[treno][i];
+      ++i;
+    }
   }
 
 }

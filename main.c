@@ -41,9 +41,9 @@ void startRegistro() {
 
 void startTreni(char mappa[10]) {
 
-  printf("I treni usano la mappa %s\n", mappa);
+  // printf("I treni usano la mappa %s\n", mappa);
 
-  for (int i = 0; i < NUMERO_PROCESSI_TRENI; i++) {
+  for (int i = 0; i < 1; i++) {
 
     // Fai partire i proessi treni
     int pid = fork();
@@ -52,7 +52,7 @@ void startTreni(char mappa[10]) {
       char *buffer;
       asprintf(&buffer, "%i", i);
 
-      execl("treno", buffer, NULL);
+      execl("treno", "treno", buffer, mappa, NULL);
 
     }
 
