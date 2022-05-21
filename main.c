@@ -14,15 +14,15 @@
 void creaFiles(void);
 void inizializzaProcessiTreni(void);
 void startRegistro(void);
-void startTreni(void);
+void startTreni(char[10]);
 
-int main() {
+int main(int argc, char *argv[]) {
 
-  creaFiles();
+  //creaFiles();
 
   startRegistro();
 
-  startTreni();
+  startTreni(argv[1]);
 
   return 0;
 
@@ -33,32 +33,26 @@ void startRegistro() {
   int pid = fork();
   if (pid == 0) {
 
-    execl("registro", "2", NULL);
+    execl("registro", NULL);
 
-  }
-  else {
-    printf("Sono il padre\n");
   }
 
 }
 
-void startTreni() {
+void startTreni(char mappa[10]) {
 
-  for (size_t i = 0; i < 2; i++) {
+  // printf("I treni usano la mappa %s\n", mappa);
+
+  for (int i = 0; i < 1; i++) {
 
     // Fai partire i proessi treni
     int pid = fork();
     if (pid == 0){
 
-      char *buf;
-      // asprintf();
-      execl("treno", "2", NULL);
+      char *buffer;
+      asprintf(&buffer, "%i", i);
 
-    }
-    else {
-
-      // wait(NULL);
-      printf("Sono il padre\n");
+      execl("treno", "treno", buffer, mappa, NULL);
 
     }
 
