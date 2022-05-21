@@ -38,12 +38,17 @@ int main() {
 
     char buffer[1024];
     read(clientFd, buffer, 1024);
-    int numeroTreno = atoi(buffer);
+    int numeroTreno = atoi(&buffer[0]);
     printf("numero treno %i\n", numeroTreno);
     // printf("%i\n", numeroTreno);
+    
+    char *mappa = malloc(7);
+    memcpy(mappa, &buffer[1], 6);
+    mappa[6] = '\0';
+    printf("La mappa da usare e %s\n", mappa);
 
     char *cammino = malloc( MAX_LUNGHEZZA_CAMMINO );
-    getCammino(cammino, numeroTreno, "MAPPA1");
+    getCammino(cammino, numeroTreno, mappa);
     printf("%s\n", cammino);
     write(clientFd, cammino, strlen(cammino) + 1);
 
@@ -58,9 +63,6 @@ int main() {
 }
 
 void getCammino(char* cammino, int treno, char* mappa){
-
-  // return (char**)malloc(2 * sizeof(char *));
-  // return mappa1[];
 
  char mappa1[NUMERO_TRENI][MAX_LUNGHEZZA_CAMMINO] = {
     { "S1;MA1;MA2;MA3;MA8;S6" },
@@ -88,7 +90,7 @@ void getCammino(char* cammino, int treno, char* mappa){
   }
   else if(strcmp(mappa, "MAPPA2") == 0){
     while(mappa2[treno][i] != '\0'){
-      cammino[i] = mappa1[treno][i];
+      cammino[i] = mappa2[treno][i];
       ++i;
     }
   }

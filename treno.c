@@ -23,7 +23,6 @@ int main(int argc, char *argv[]) {
 
 void getCammino(char *numTreno, char *mappa){
 
-
   struct sockaddr_un registro;
   registro.sun_family = AF_UNIX;
   strcpy(registro.sun_path, SERVER_NAME);
@@ -39,10 +38,10 @@ void getCammino(char *numTreno, char *mappa){
     }
   }while(result == -1);
 
-  char buffer[7] = {'M', 'A', 'P', 'P', 'A', '1', '\0'};
 
-  write(serverFd, numTreno, strlen(numTreno) + 1);
-  // write(serverFd, &buffer, 7);
+  char *dataForServer = strcat(numTreno, mappa);
+  // printf("%s\n", dataForServer);
+  write(serverFd, dataForServer, strlen(dataForServer) + 1);
 
   char *cammino = malloc(100);
   read(serverFd, cammino, 100);
