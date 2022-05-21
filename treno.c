@@ -33,19 +33,19 @@ void getCammino(char *numTreno, char *mappa){
   int result;
   do{
     int serverLen = sizeof(registro);
-    result  = connect(serverFd, (struct sockaddr*) &registro, serverLen);
-    if(result == -1) {sleep(1); printf("Riprovo tra un secondo");}
+    result = connect(serverFd, (struct sockaddr*) &registro, serverLen);
+    if(result == -1) {
+    	sleep(1);
+    }
   }while(result == -1);
-
-  printf("Connesso");
 
   char buffer[7] = {'M', 'A', 'P', 'P', 'A', '1', '\0'};
 
-  // write(serverFd, numTreno, strlen(numTreno) + 1);
-  write(serverFd, &buffer, 7);
+  write(serverFd, numTreno, strlen(numTreno) + 1);
+  // write(serverFd, &buffer, 7);
 
-  char *cammino;
-  read(serverFd, cammino, 1024);
+  char *cammino = malloc(100);
+  read(serverFd, cammino, 100);
   printf("Il cammino del treno %s e': %s\n", numTreno, cammino);
 
   close(serverFd);

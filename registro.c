@@ -7,15 +7,12 @@
 
 #define NUMERO_TRENI 5
 #define MAX_LUNGHEZZA_CAMMINO 100
-#define PORT 8000
 #define SERVER_NAME "serveRegistro"
 
 void stampaMappa (const char mappa[NUMERO_TRENI][MAX_LUNGHEZZA_CAMMINO][10]);
 void getCammino(char *, int, char *);
 
 int main() {
-
-  // printf("Sono il registro\n");
 
   int serverFd = socket(AF_UNIX, SOCK_STREAM, 0);
 
@@ -25,43 +22,32 @@ int main() {
   strcpy(serverAddress.sun_path, SERVER_NAME);
   unlink(SERVER_NAME);
 
-  // printf("Ho fatto il binding\n");
   bind(serverFd, (struct sockaddr*)&serverAddress, sizeof(serverAddress));
 
-  printf("Sto ascoltando sulla porta %i\n", PORT);
   listen(serverFd, NUMERO_TRENI);
 
   int cont = 0;
 
-  while(cont < 1) {
+  while(1) {
 
     struct sockaddr_un clientAddress;
-    int clientLen = sizeof(clientAddress);
-    int clientFd = accept(serverFd, (struct sockaddr*)&clientAddress, &clientLen);
+    int sizeClient = sizeof(clientAddress);
+    int clientFd = accept(serverFd, (struct sockaddr*)&clientAddress, &sizeClient);
 
-    // printf("Ricevuta una nuova connessione\n");
+    printf("Ricevuta una nuova connessione\n");
 
     char buffer[1024];
     read(clientFd, buffer, 1024);
-    // int numeroTreno = atoi(buffer);
-    // printf("numero treno 2\n");
-    printf("ciao1");
-
-    char mappa[1024];
-    printf("ciao2");
-    read(clientFd, buffer, 1024);
-    printf("La mappa del registro è %s", buffer);
-
+    int numeroTreno = atoi(buffer);
+    printf("numero treno %i\n", numeroTreno);
     // printf("%i\n", numeroTreno);
 
     char *cammino = malloc( MAX_LUNGHEZZA_CAMMINO );
-    // getCammino(cammino, numeroTreno, "MAPPA1");
-
-    write(clientFd, &"cammino", MAX_LUNGHEZZA_CAMMINO);
+    getCammino(cammino, numeroTreno, "MAPPA1");
+    printf("%s\n", cammino);
+    write(clientFd, cammino, strlen(cammino) + 1);
 
     close(clientFd);
-
-    cont++;
 
   }
 
@@ -106,6 +92,8 @@ void getCammino(char* cammino, int treno, char* mappa){
       ++i;
     }
   }
+
+  cammino[i] = '\0';
 
 }
 
