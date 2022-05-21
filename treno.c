@@ -8,6 +8,7 @@
 #define SERVER_NAME "serveRegistro"
 
 void getCammino(char *, char *);
+void startJourney(char *);
 
 int main(int argc, char *argv[]) {
 
@@ -47,6 +48,21 @@ void getCammino(char *numTreno, char *mappa){
   read(serverFd, cammino, 100);
   printf("Il cammino del treno %s e': %s\n", numTreno, cammino);
 
+  startJourney(cammino);
+
   close(serverFd);
+
+}
+
+void startJourney(char * cammino){
+
+	char *passo = strtok(cammino, ";");
+
+	while (passo != NULL) {
+
+		printf("%s\n", passo);
+		passo = strtok(NULL, ";");
+
+	}
 
 }
