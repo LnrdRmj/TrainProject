@@ -1,9 +1,13 @@
 #include <stdio.h>
+#include <stdbool.h>
 #include "segmentiManager.h"
 
 #define PREFISSO "MA"
 
 void creaFileSegmento(int);
+void readSegmento(int, char*);
+void getNumeroSegmentoDaStringa(int*, char*);
+bool isLettera(char);
 
 void creaFileSegmento(int numSegmento){
 
@@ -19,5 +23,32 @@ void creaFileSegmento(int numSegmento){
   fclose(file);
   // Setta i permessi corretti del file
   chmod(pathName, 0666);
+
+}
+
+void readSegmento(int segmento, char* occupato){
+
+	char *fileName = malloc(3);
+
+	asprintf(&fileName, "segmenti/%s%d", PREFISSO, segmento);
+	printf("%s\n", fileName);
+
+}
+
+void getNumeroSegmentoDaStringa(int *risultato, char *segmento) {
+
+	// Salta le prime lettere
+	while(isLettera(*segmento))
+		segmento++;
+
+	// Converte da stringa a numero
+	*risultato = strtol(segmento, NULL, 10);
+
+}
+
+bool isLettera(char daTestare) {
+
+	return ( daTestare >= 'A' && daTestare <= 'Z' ) || 
+			( daTestare >= 'a' && daTestare <= 'z' );
 
 }

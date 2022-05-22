@@ -4,11 +4,16 @@
 #include <sys/socket.h>
 #include <sys/un.h>
 #include <string.h>
+#include <stdbool.h>
+
+#include "segmentiManager.h"
 
 #define SERVER_NAME "serveRegistro"
+#define PREFISSO_FILE_SEGMENTO "MA"
 
 void getCammino(char *, char *);
-void startJourney(char *);
+void startJourney(char *, long);
+bool isStazione(char *);
 
 int main(int argc, char *argv[]) {
 
@@ -39,6 +44,8 @@ void getCammino(char *numTreno, char *mappa){
     }
   }while(result == -1);
 
+  char *tmp;
+  long lnumeroTreno = strtol(numTreno, &tmp, 10);
 
   char *dataForServer = strcat(numTreno, mappa);
   // printf("%s\n", dataForServer);
@@ -46,23 +53,44 @@ void getCammino(char *numTreno, char *mappa){
 
   char *cammino = malloc(100);
   read(serverFd, cammino, 100);
-  printf("Il cammino del treno %s e': %s\n", numTreno, cammino);
+  // printf("Il cammino del treno %s e': %s\n", numTreno, cammino);
 
-  startJourney(cammino);
+  startJourney(cammino, lnumeroTreno);
 
   close(serverFd);
 
 }
 
-void startJourney(char * cammino){
+void startJourney(char * cammino, long numeroTreno){
 
-	char *passo = strtok(cammino, ";");
+	char *segmento = strtok(cammino, ";");
 
-	while (passo != NULL) {
+	while (segmento != NULL) {
 
-		printf("%s\n", passo);
-		passo = strtok(NULL, ";");
+		int *numeroSegmento = malloc(sizeof(int));
+
+		if(isStazione(segmento)){
+
+			printf("Stazione %s\n", segmento);
+
+		}
+		// Allora e un segmento
+		else{
+
+			getNumeroSegmentoDaStringa(numeroSegmento, segmento);
+			printf("%s: il numero del segmetno e: %i\n", segmento, *numeroSegmento);
+			// readSegmento();
+
+		}
+
+		segmento = strtok(NULL, ";");
 
 	}
 
 }
+
+bool isStazione(char *string) {
+
+	return *string == 'S';
+
+} 
