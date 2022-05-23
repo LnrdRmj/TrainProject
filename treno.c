@@ -39,9 +39,7 @@ void getCammino(char *numTreno, char *mappa){
     }
   }while(result == -1);
 
-
   char *dataForServer = strcat(numTreno, mappa);
-  // printf("%s\n", dataForServer);
   write(serverFd, dataForServer, strlen(dataForServer) + 1);
 
   char *cammino = malloc(100);

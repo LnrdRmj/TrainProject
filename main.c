@@ -18,7 +18,7 @@ void startTreni(char[10]);
 
 int main(int argc, char *argv[]) {
 
-  //creaFiles();
+  creaFiles();
 
   startRegistro();
 
