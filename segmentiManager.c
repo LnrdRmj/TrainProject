@@ -20,7 +20,9 @@ void creaFileSegmento(int numSegmento){
   FILE *file = fopen(pathName, "w");
 
   // Inizalizzazione a 0 dei file
-  // fwrite("1", 1, 1, file);
+  char str[] = "ciao";
+  // fwrite(str, 1, sizeof(str), file);
+  fputc('0', file);
 
   printf("Scritto 0 in %s\n", pathName);
 
