@@ -88,7 +88,7 @@ void startJourney(char * cammino, long numeroTreno){
 
 		}
 		segmento = strtok(NULL, ";");
-		sleep(1);
+		sleep(3);
 
 	}
 

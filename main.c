@@ -20,9 +20,9 @@ int main(int argc, char *argv[]) {
 
   creaFiles();
 
-  // startRegistro();
+  startRegistro();
 
-  // startTreni(argv[1]);
+  startTreni(argv[1]);
 
   return 0;
 

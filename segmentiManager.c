@@ -39,10 +39,8 @@ void readSegmento(int segmento, char* occupato){
 	asprintf(&fileName, "segmenti/%s%d", PREFISSO, segmento);
 	printf("%s\n", fileName);
 	FILE *fileSegmento = fopen(fileName, "r");
-	
-	char arr[1];
-	int charsRead = fread(arr, 1, 1, fileSegmento);
-	printf("ho letto %c\n", arr[0]);
+
+	*occupato = fgetc(fileSegmento);
 
 }
 
