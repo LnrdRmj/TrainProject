@@ -42,7 +42,7 @@ void startRegistro() {
 void startTreni(char mappa[10]) {
 
   // printf("I treni usano la mappa %s\n", mappa);
-
+  //NUMERO_PROCESSI_TRENI
   for (int i = 0; i < 1; i++) {
 
     // Fai partire i proessi treni
@@ -62,7 +62,7 @@ void startTreni(char mappa[10]) {
 
 void creaFiles() {
 
-  for (int i = 0; i < NUMERO_TRATTE; i++) {
+  for (int i = 1; i <= NUMERO_TRATTE; i++) {
 
     creaFileSegmento(i);
 

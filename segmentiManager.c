@@ -9,6 +9,7 @@ void creaFileSegmento(int);
 void readSegmento(int, char*);
 void getNumeroSegmentoDaStringa(int*, char*);
 bool isLettera(char);
+bool takeSegment(int);
 
 void creaFileSegmento(int numSegmento){
 
@@ -24,7 +25,7 @@ void creaFileSegmento(int numSegmento){
   // fwrite(str, 1, sizeof(str), file);
   fputc('0', file);
 
-  printf("Scritto 0 in %s\n", pathName);
+  // printf("Scritto 0 in %s\n", pathName);
 
   fclose(file);
   // Setta i permessi corretti del file
@@ -37,8 +38,10 @@ void readSegmento(int segmento, char* occupato){
 	char *fileName = malloc(3);
 
 	asprintf(&fileName, "segmenti/%s%d", PREFISSO, segmento);
-	printf("%s\n", fileName);
+	//printf("%s\n", fileName);
 	FILE *fileSegmento = fopen(fileName, "r");
+
+	if (fileSegmento == NULL) printf("Fail segmeno %i\n", segmento);
 
 	*occupato = fgetc(fileSegmento);
 
@@ -51,6 +54,24 @@ void getNumeroSegmentoDaStringa(int *risultato, char *segmento) {
 		segmento++;
 	// Converte da stringa a numero
 	*risultato = strtol(segmento, NULL, 10);
+
+}
+
+bool takeSegment(int segmento) {
+
+	char *fileName = malloc(3);
+
+	asprintf(&fileName, "segmenti/%s%d", PREFISSO, segmento);
+	//printf("%s\n", fileName);
+	FILE *fileSegmento = fopen(fileName, "r+");
+	if (fileSegmento == NULL) printf("Fail segmeno %i\n", segmento);
+
+	if(fgetc(fileSegmento) == '0') {
+		fputc('1', fileSegmento);
+		return true;
+	}
+
+	return false;
 
 }
 

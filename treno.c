@@ -66,6 +66,8 @@ void startJourney(char * cammino, long numeroTreno){
 	char *segmento = strtok(cammino, ";");
 	segmento = strtok(NULL, ";"); // Salto la prima stazione tanto non mi serve
 
+	printf("Il treno %lu e' partito \n", numeroTreno);
+
 	while (segmento != NULL) {
 
 		// La prima stazione che trovo sara quella di arrivo visto
@@ -73,6 +75,7 @@ void startJourney(char * cammino, long numeroTreno){
 		if(isStazione(segmento)){
 
 			printf("Stazione %s\n", segmento);
+			segmento = strtok(NULL, ";");
 
 		}
 		// Allora e un segmento
@@ -84,13 +87,24 @@ void startJourney(char * cammino, long numeroTreno){
 			// printf("%s: il numero del segmetno e: %i\n", segmento, numeroSegmento);
 			char *segmentoOccupato = malloc(1);
 			readSegmento(numeroSegmento, segmentoOccupato);
-			printf("%c\n", *segmentoOccupato);
+			
+			if(takeSegment(numeroSegmento) == true){
+
+				segmento = strtok(NULL, ";");
+				printf("Ho occupato il segmento %i\n", numeroSegmento);
+
+			}
+			else {
+				printf("Il treno %lu si e' bloccato sul segmento %s bloccato\n", numeroTreno, segmento);
+			}
+			// printf("%c\n", *segmentoOccupato);
 
 		}
-		segmento = strtok(NULL, ";");
 		sleep(3);
 
 	}
+
+	printf("Il treno %lu ha finito\n", numeroTreno);
 
 }
 
