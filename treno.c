@@ -14,6 +14,7 @@
 void getCammino(char *, char *);
 void startJourney(char *, long);
 bool isStazione(char *);
+void liberaSegmento(char *);
 
 int main(int argc, char *argv[]) {
 
@@ -64,7 +65,9 @@ void getCammino(char *numTreno, char *mappa){
 void startJourney(char * cammino, long numeroTreno){
 
 	char *segmento = strtok(cammino, ";");
-	segmento = strtok(NULL, ";"); // Salto la prima stazione tanto non mi serve
+	// Salto la prima stazione tanto non mi serve
+	segmento = strtok(NULL, ";");
+	char *previousSegment = NULL;
 
 	printf("Il treno %lu e' partito \n", numeroTreno);
 
@@ -76,6 +79,7 @@ void startJourney(char * cammino, long numeroTreno){
 
 			printf("Stazione %s\n", segmento);
 			segmento = strtok(NULL, ";");
+			liberaSegmento(previousSegment);
 
 		}
 		// Allora e un segmento
@@ -88,10 +92,16 @@ void startJourney(char * cammino, long numeroTreno){
 			char *segmentoOccupato = malloc(1);
 			readSegmento(numeroSegmento, segmentoOccupato);
 			
-			if(takeSegment(numeroSegmento) == true){
+			liberaSegmento(previousSegment);
 
-				segmento = strtok(NULL, ";");
+			if(takeSegmento(numeroSegmento) == true){
+
 				printf("Ho occupato il segmento %i\n", numeroSegmento);
+				if (previousSegment != NULL) printf("Il segmento precedente e'%s\n", previousSegment);
+
+				previousSegment = malloc(5);
+				strcpy(previousSegment, segmento);
+				segmento = strtok(NULL, ";");
 
 			}
 			else {
@@ -105,6 +115,18 @@ void startJourney(char * cammino, long numeroTreno){
 	}
 
 	printf("Il treno %lu ha finito\n", numeroTreno);
+
+}
+
+void liberaSegmento(char *segmento){
+
+	// Se il segmento passato e valido allora li libero
+	if (segmento != NULL) {
+		int numeroSegmento = 0;
+		getNumeroSegmentoDaStringa(&numeroSegmento, segmento);
+		freeSegmento(numeroSegmento);
+		// printf("Ho liberato il segmento %s\n", segmento);
+	}
 
 }
 

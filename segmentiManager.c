@@ -9,7 +9,8 @@ void creaFileSegmento(int);
 void readSegmento(int, char*);
 void getNumeroSegmentoDaStringa(int*, char*);
 bool isLettera(char);
-bool takeSegment(int);
+bool takeSegmento(int);
+void freeSegmento(int);
 
 void creaFileSegmento(int numSegmento){
 
@@ -57,22 +58,42 @@ void getNumeroSegmentoDaStringa(int *risultato, char *segmento) {
 
 }
 
-bool takeSegment(int segmento) {
+bool takeSegmento(int segmento) {
 
 	char *fileName;
 
 	asprintf(&fileName, "segmenti/%s%d", PREFISSO, segmento);
 	//printf("%s\n", fileName);
 	FILE *fileSegmento = fopen(fileName, "r+");
-	if (fileSegmento == NULL) printf("Fail segmeno %i\n", segmento);
+	if (fileSegmento == NULL) printf("Fail segmento %i\n", segmento);
 
 	if(fgetc(fileSegmento) == '0') {
+		// Mi riposiziono all'inizio del file
 		fseek(fileSegmento, 0, SEEK_SET);
 		fputc('1', fileSegmento);
+
+		fclose(fileSegmento);
+
 		return true;
 	}
 
+	fclose(fileSegmento);
 	return false;
+
+}
+
+// Mette a 0 il segmento e lo "libera"
+void freeSegmento(int segmento) {
+
+	char *fileName;
+
+	asprintf(&fileName, "segmenti/%s%d", PREFISSO, segmento);
+
+	FILE *fileSegmento = fopen(fileName, "w");
+	
+	fputc('0', fileSegmento);
+
+	fclose(fileSegmento);
 
 }
 

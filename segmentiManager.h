@@ -3,4 +3,5 @@
 void creaFileSegmento(int);
 void readSegmento(int, char*);
 void getNumeroSegmentoDaStringa(int*, char*);
-bool takeSegment(int);
+bool takeSegmento(int);
+void freeSegmento(int);
