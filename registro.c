@@ -39,17 +39,14 @@ int main() {
     char buffer[1024];
     read(clientFd, buffer, 1024);
     int numeroTreno = atoi(&buffer[0]);
-    printf("numero treno %i\n", numeroTreno);
-    // printf("%i\n", numeroTreno);
     
     char *mappa = malloc(7);
     memcpy(mappa, &buffer[1], 6);
     mappa[6] = '\0';
-    printf("La mappa da usare e %s\n", mappa);
 
     char *cammino = malloc( MAX_LUNGHEZZA_CAMMINO );
     getCammino(cammino, numeroTreno, mappa);
-    printf("%s\n", cammino);
+    // printf("%s\n", cammino);
     write(clientFd, cammino, strlen(cammino) + 1);
 
     close(clientFd);

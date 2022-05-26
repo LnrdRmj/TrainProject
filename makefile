@@ -13,5 +13,8 @@ segmentiManager: segmentiManager.c
 segmentiManager.o: segmentiManager.c
 	gcc -c segmentiManager.c
 
-treno: treno.c
-	gcc treno.c -o treno
+treno: treno.o segmentiManager.o
+	gcc treno.o segmentiManager.o -o treno
+
+treno.o: treno.c segmentiManager.h
+	gcc treno.c -c
