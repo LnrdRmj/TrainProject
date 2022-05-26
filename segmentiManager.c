@@ -59,7 +59,7 @@ void getNumeroSegmentoDaStringa(int *risultato, char *segmento) {
 
 bool takeSegment(int segmento) {
 
-	char *fileName = malloc(3);
+	char *fileName;
 
 	asprintf(&fileName, "segmenti/%s%d", PREFISSO, segmento);
 	//printf("%s\n", fileName);
@@ -67,6 +67,7 @@ bool takeSegment(int segmento) {
 	if (fileSegmento == NULL) printf("Fail segmeno %i\n", segmento);
 
 	if(fgetc(fileSegmento) == '0') {
+		fseek(fileSegmento, 0, SEEK_SET);
 		fputc('1', fileSegmento);
 		return true;
 	}
