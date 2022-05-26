@@ -46,7 +46,7 @@ int main() {
 
     char *cammino = malloc( MAX_LUNGHEZZA_CAMMINO );
     getCammino(cammino, numeroTreno, mappa);
-    printf("%s\n", cammino);
+    // printf("%s\n", cammino);
     write(clientFd, cammino, strlen(cammino) + 1);
 
     close(clientFd);
