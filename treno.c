@@ -15,6 +15,7 @@ void getCammino(char *, char *);
 void startJourney(char *, long);
 bool isStazione(char *);
 void liberaSegmento(char *);
+int splitString(char *, const char *, char *[]);
 
 int main(int argc, char *argv[]) {
 
@@ -63,21 +64,35 @@ void getCammino(char *numTreno, char *mappa){
 
 void startJourney(char * cammino, long numeroTreno){
 
-	char *segmento = strtok(cammino, ";");
-	// Salto la prima stazione tanto non mi serve
-	segmento = strtok(NULL, ";");
+	// Questo array conterra' il percorso sottoforma di array
+	char *passiCammino[10];
+
+	int numPassi = splitString(cammino, ";", passiCammino);
+	printf("Il cammino ha %i passi\n", numPassi);
+	// char *segmento = strtok(cammino, ";");
+	// // Salto la prima stazione tanto non mi serve
+	// segmento = strtok(NULL, ";");
 	char *previousSegment = NULL;
 
 	printf("Il treno %lu e' partito \n", numeroTreno);
 
-	while (segmento != NULL) {
+	// while (segmento != NULL) {
+	// Salto la prima stazione perche non mi serve
+	for (int i = 1; i < numPassi; ++i){
+
+		char *segmento = malloc(10);
+		strcpy(segmento, passiCammino[i]);
+
+		if (i > 0) {
+			previousSegment = malloc(10);
+			strcpy(previousSegment, passiCammino[i - 1]);
+		}
 
 		// La prima stazione che trovo sara quella di arrivo visto
 		// visto che la prima l'ho saltata
 		if(isStazione(segmento)){
 
-			// printf("Stazione %s\n", segmento);
-			segmento = strtok(NULL, ";");
+			printf("Stazione %s\n", segmento);
 			liberaSegmento(previousSegment);
 
 		}
@@ -97,10 +112,6 @@ void startJourney(char * cammino, long numeroTreno){
 
 				printf("Il treno %lu ha occupato il segmento %i\n",numeroTreno, numeroSegmento);
 				// if (previousSegment != NULL) printf("Il segmento precedente e'%s\n", previousSegment);
-
-				previousSegment = malloc(5);
-				strcpy(previousSegment, segmento);
-				segmento = strtok(NULL, ";");
 
 			}
 			else {
@@ -126,6 +137,25 @@ void liberaSegmento(char *segmento){
 		freeSegmento(numeroSegmento);
 		// printf("Ho liberato il segmento %s\n", segmento);
 	}
+
+}
+//Helpers
+
+// Divide una stringa
+int splitString(char *toSplit, const char *delimiter, char *tokens[10]){
+
+	int i = 0;
+	char *token = strtok(toSplit, delimiter);
+
+	while(token != NULL){
+		tokens[i] = malloc(50);
+		strcpy(tokens[i], token);
+		// printf("Questo e da tokens %s\n", tokens[i]);
+		i++;
+		token = strtok(NULL, delimiter);
+	}
+
+	return i;
 
 }
 

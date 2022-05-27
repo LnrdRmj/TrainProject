@@ -33,7 +33,7 @@ void startRegistro() {
   int pid = fork();
   if (pid == 0) {
 
-    execl("registro", NULL);
+    execl("registro", "registro", NULL);
 
   }
 
