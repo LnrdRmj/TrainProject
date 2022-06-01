@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <time.h>
 
 #include "log.h"
 
@@ -9,6 +10,7 @@ FILE * creaFileLogTreno(int , FILE *);
 void logStatoTreno(char*, char*, FILE*);
 void logInizioViaggio(char*, FILE*);
 void logFineViaggio(char*, FILE*);
+char* dataOraAttuali();
 
 void test() {
 	printf("test 4\n");
@@ -25,15 +27,17 @@ FILE * creaFileLogTreno(int numeroTreno, FILE *fileLog) {
 
 void logInizioViaggio(char *stazioneIniziale, FILE *logFile) {
 
-	fprintf(logFile, "Sono partito dalla stazione %s\n",
-			stazioneIniziale);
+	fprintf(logFile, "Sono partito dalla stazione %s [%s]\n",
+			stazioneIniziale,
+			dataOraAttuali());
 
 }
 
 void logFineViaggio(char *stazioneFinale, FILE *logFile) {
 
-	fprintf(logFile, "Sono arrivato alla stazione %s\n",
-			stazioneFinale);
+	fprintf(logFile, "Sono arrivato alla stazione %s \t [%s]\n",
+			stazioneFinale,
+			dataOraAttuali());
 
 }
 
@@ -50,8 +54,31 @@ void logStatoTreno(char *posizioneCorrente, char* prossimaPosizione, FILE *logFi
 
 	printf("%s\n", tmp);
 
-	fprintf(logFile, "Sono in %s. (Prossimo passo %s) data\n",
+	fprintf(logFile, "Sono in %s. (Prossimo passo %s) \t [%s]\n",
 			posizioneCorrente,
-			tmp);
+			tmp,
+			dataOraAttuali());
+
+}
+
+char* dataOraAttuali() {
+
+	char *dataOra = malloc(100);
+
+	time_t rawtime;
+	struct tm * timeInfo;
+
+	time(&rawtime);
+	timeInfo = localtime(&rawtime);
+
+	sprintf(dataOra, "%d/%d/%d %d:%d:%d", 
+		timeInfo->tm_mday,
+		timeInfo->tm_mon + 1,
+		timeInfo->tm_year + 1900,
+		timeInfo->tm_hour,
+		timeInfo->tm_min,
+		timeInfo->tm_sec);
+
+	return dataOra;
 
 }

@@ -101,13 +101,12 @@ void startJourney(char * cammino, long numeroTreno, FILE *logFile){
 
 		if(isStazione(segmento)){
 
-			// if (i == 0) {
-
-			// 	logInizioViaggio(segmento, logFile);
-			// }
-			// else{
-			// 	logInizioViaggio(segmento, logFile);	
-			// }
+			if (i == 0) {
+				logInizioViaggio(segmento, logFile);
+			}
+			else{
+				logFineViaggio(segmento, logFile);	
+			}
 
 			printf("Stazione %s\n", segmento);
 			liberaSegmento(previousSegment);
