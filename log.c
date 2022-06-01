@@ -54,7 +54,7 @@ void logStatoTreno(char *posizioneCorrente, char* prossimaPosizione, FILE *logFi
 
 	printf("%s\n", tmp);
 
-	fprintf(logFile, "Sono in %s. (Prossimo passo %s) \t [%s]\n",
+	fprintf(logFile, "Sono in %s (Prossimo passo %s) \t [%s]\n",
 			posizioneCorrente,
 			tmp,
 			dataOraAttuali());

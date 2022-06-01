@@ -7,7 +7,7 @@
 
 void creaFileSegmento(int);
 void readSegmento(int, char*);
-void getNumeroSegmentoDaStringa(int*, char*);
+int getNumeroSegmentoDaStringa(char*);
 bool isLettera(char);
 bool takeSegmento(int);
 void freeSegmento(int);
@@ -48,13 +48,13 @@ void readSegmento(int segmento, char* occupato){
 
 }
 
-void getNumeroSegmentoDaStringa(int *risultato, char *segmento) {
+int getNumeroSegmentoDaStringa(char *segmento) {
 
 	// Salta le prime lettere
 	while(isLettera(*segmento))
 		segmento++;
 	// Converte da stringa a numero
-	*risultato = strtol(segmento, NULL, 10);
+	return strtol(segmento, NULL, 10);
 
 }
 

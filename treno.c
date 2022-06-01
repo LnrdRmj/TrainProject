@@ -12,7 +12,7 @@
 #define SERVER_NAME "serveRegistro"
 #define PREFISSO_FILE_SEGMENTO "MA"
 
-void getCammino(long, char *, char *);
+char* getCammino(long, char *);
 void startJourney(char *, long, FILE *);
 bool isStazione(char *);
 void liberaSegmento(char *);
@@ -31,8 +31,7 @@ int main(int argc, char *argv[]) {
   FILE *logFile = creaFileLogTreno(lnumeroTreno, logFile);
   printf("%p\n", logFile);
 
-  char *cammino = malloc(100);
-  getCammino(lnumeroTreno, mappa, cammino);
+  char *cammino = getCammino(lnumeroTreno, mappa);
 
   printf("Cammino %s\n", cammino);
 
@@ -42,7 +41,7 @@ int main(int argc, char *argv[]) {
 
 }
 
-void getCammino(long lnumeroTreno, char *mappa, char *cammino){
+char* getCammino(long lnumeroTreno, char *mappa){
 
   struct sockaddr_un registro;
   registro.sun_family = AF_UNIX;
@@ -68,10 +67,13 @@ void getCammino(long lnumeroTreno, char *mappa, char *cammino){
   char *dataForServer = strcat(buffer, mappa);
   write(serverFd, dataForServer, strlen(dataForServer) + 1);
 
+  char *cammino = malloc(100);
   read(serverFd, cammino, 100);
   // printf("Il cammino del treno %s e': %s\n", numTreno, cammino);
 
   close(serverFd);
+
+  return cammino;
 
 }
 
@@ -117,14 +119,14 @@ void startJourney(char * cammino, long numeroTreno, FILE *logFile){
 
 			logStatoTreno(segmento, passiCammino[i + 1], logFile);
 
-			int numeroSegmento = 0;
-
-			getNumeroSegmentoDaStringa(&numeroSegmento, segmento);
+			int numeroSegmento = getNumeroSegmentoDaStringa(segmento);
 			// printf("%s: il numero del segmetno e: %i\n", segmento, numeroSegmento);
 			char *segmentoOccupato = malloc(1);
 			readSegmento(numeroSegmento, segmentoOccupato);
 
-			liberaSegmento(previousSegment);
+			// Libero solo i segmenti
+			if (!isStazione(previousSegment))
+				liberaSegmento(previousSegment);
 
 			if(takeSegmento(numeroSegmento) == true){
 
@@ -150,9 +152,9 @@ void liberaSegmento(char *segmento){
 
 	// Se il segmento passato e valido allora li libero
 	if (segmento != NULL) {
-		int numeroSegmento = 0;
-		getNumeroSegmentoDaStringa(&numeroSegmento, segmento);
+		int numeroSegmento = getNumeroSegmentoDaStringa(segmento);
 		freeSegmento(numeroSegmento);
+		printf("liberato %i\n", numeroSegmento);
 		// printf("Ho liberato il segmento %s\n", segmento);
 	}
 
