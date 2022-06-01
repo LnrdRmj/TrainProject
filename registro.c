@@ -58,7 +58,7 @@ int main() {
   return 0;
 
 }
-
+ 
 void getCammino(char* cammino, int treno, char* mappa){
 
  char mappa1[NUMERO_TRENI][MAX_LUNGHEZZA_CAMMINO] = {

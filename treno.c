@@ -7,6 +7,7 @@
 #include <stdbool.h>
 
 #include "segmentiManager.h"
+#include "log.h"
 
 #define SERVER_NAME "serveRegistro"
 #define PREFISSO_FILE_SEGMENTO "MA"
@@ -18,6 +19,8 @@ void liberaSegmento(char *);
 int splitString(char *, const char *, char *[]);
 
 int main(int argc, char *argv[]) {
+
+	test();
 
   // Il primo argomento è il numero del treno
   char *numTreno = argv[1];
