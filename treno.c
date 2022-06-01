@@ -12,27 +12,37 @@
 #define SERVER_NAME "serveRegistro"
 #define PREFISSO_FILE_SEGMENTO "MA"
 
-void getCammino(char *, char *);
-void startJourney(char *, long);
+void getCammino(long, char *, char *);
+void startJourney(char *, long, FILE *);
 bool isStazione(char *);
 void liberaSegmento(char *);
 int splitString(char *, const char *, char *[]);
 
 int main(int argc, char *argv[]) {
 
-	test();
-
   // Il primo argomento è il numero del treno
   char *numTreno = argv[1];
   char *mappa = argv[2];
 
-  getCammino(numTreno, mappa);
+  // Converto la stringa in long
+  char *tmp;
+  long lnumeroTreno = strtol(numTreno, &tmp, 10);
+
+  FILE *logFile = creaFileLogTreno(lnumeroTreno, logFile);
+  printf("%p\n", logFile);
+
+  char *cammino = malloc(100);
+  getCammino(lnumeroTreno, mappa, cammino);
+
+  printf("Cammino %s\n", cammino);
+
+  startJourney(cammino, lnumeroTreno, logFile);
 
   return 0;
 
 }
 
-void getCammino(char *numTreno, char *mappa){
+void getCammino(long lnumeroTreno, char *mappa, char *cammino){
 
   struct sockaddr_un registro;
   registro.sun_family = AF_UNIX;
@@ -49,23 +59,23 @@ void getCammino(char *numTreno, char *mappa){
     }
   }while(result == -1);
 
-  char *tmp;
-  long lnumeroTreno = strtol(numTreno, &tmp, 10);
+  // char *tmp;
+  // long lnumeroTreno = strtol(numTreno, &tmp, 10);
 
-  char *dataForServer = strcat(numTreno, mappa);
+  char *buffer;
+  asprintf(&buffer, "%i", lnumeroTreno); 
+
+  char *dataForServer = strcat(buffer, mappa);
   write(serverFd, dataForServer, strlen(dataForServer) + 1);
 
-  char *cammino = malloc(100);
   read(serverFd, cammino, 100);
   // printf("Il cammino del treno %s e': %s\n", numTreno, cammino);
-
-  startJourney(cammino, lnumeroTreno);
 
   close(serverFd);
 
 }
 
-void startJourney(char * cammino, long numeroTreno){
+void startJourney(char * cammino, long numeroTreno, FILE *logFile){
 
 	// Questo array conterra' il percorso sottoforma di array
 	char *passiCammino[10];
@@ -79,9 +89,7 @@ void startJourney(char * cammino, long numeroTreno){
 
 	printf("Il treno %lu e' partito \n", numeroTreno);
 
-	// while (segmento != NULL) {
-	// Salto la prima stazione perche non mi serve
-	for (int i = 1; i < numPassi; ++i){
+	for (int i = 0; i < numPassi; ++i){
 
 		char *segmento = malloc(10);
 		strcpy(segmento, passiCammino[i]);
@@ -91,16 +99,24 @@ void startJourney(char * cammino, long numeroTreno){
 			strcpy(previousSegment, passiCammino[i - 1]);
 		}
 
-		// La prima stazione che trovo sara quella di arrivo visto
-		// visto che la prima l'ho saltata
 		if(isStazione(segmento)){
+
+			// if (i == 0) {
+
+			// 	logInizioViaggio(segmento, logFile);
+			// }
+			// else{
+			// 	logInizioViaggio(segmento, logFile);	
+			// }
 
 			printf("Stazione %s\n", segmento);
 			liberaSegmento(previousSegment);
 
 		}
-		// Allora e un segmento
+		// Allora e' un segmento
 		else{
+
+			logStatoTreno(segmento, passiCammino[i + 1], logFile);
 
 			int numeroSegmento = 0;
 
