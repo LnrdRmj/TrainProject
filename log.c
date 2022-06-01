@@ -43,20 +43,9 @@ void logFineViaggio(char *stazioneFinale, FILE *logFile) {
 
 void logStatoTreno(char *posizioneCorrente, char* prossimaPosizione, FILE *logFile) {
 
-	char *tmp = malloc(5);
-	// Se non c'e una prossima posizione allora 
-	if (prossimaPosizione == NULL) {
-		strcpy(tmp, "--");
-	}
-	else {
-		strcpy(tmp, prossimaPosizione);	
-	}
-
-	printf("%s\n", tmp);
-
-	fprintf(logFile, "Sono in %s (Prossimo passo %s) \t [%s]\n",
+	fprintf(logFile, "Sono in %s. (Prossimo passo %s) \t [%s]\n",
 			posizioneCorrente,
-			tmp,
+			prossimaPosizione,
 			dataOraAttuali());
 
 }
@@ -71,7 +60,7 @@ char* dataOraAttuali() {
 	time(&rawtime);
 	timeInfo = localtime(&rawtime);
 
-	sprintf(dataOra, "%d/%d/%d %d:%d:%d", 
+	sprintf(dataOra, "%d/%d/%d %d:%d:%d",
 		timeInfo->tm_mday,
 		timeInfo->tm_mon + 1,
 		timeInfo->tm_year + 1900,
