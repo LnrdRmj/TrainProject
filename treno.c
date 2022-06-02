@@ -12,11 +12,14 @@
 #define SERVER_NAME "serveRegistro"
 #define PREFISSO_FILE_SEGMENTO "MA"
 
+typedef bool (*politicaSegmento) (int, int);
+
 char* getCammino(long, char *);
-void startJourney(char *, long, FILE *);
+void startJourney(char *, long, FILE *, char*);
 bool isStazione(char *);
 void liberaSegmento(char *);
 int splitString(char *, const char *, char *[]);
+politicaSegmento scegliStrategia(char *);
 
 int main(int argc, char *argv[]) {
 
@@ -24,8 +27,6 @@ int main(int argc, char *argv[]) {
   char *numTreno = argv[1];
   char *mode = argv[2];
   char *mappa = argv[3];
-
-  printf("Mode treno %s\n", mode);
 
   // Converto la stringa in long
   char *tmp;
@@ -37,7 +38,7 @@ int main(int argc, char *argv[]) {
 
   // printf("Cammino %s\n", cammino);
 
-  startJourney(cammino, lnumeroTreno, logFile);
+  startJourney(cammino, lnumeroTreno, logFile, mode);
 
   return 0;
 
@@ -79,7 +80,7 @@ char* getCammino(long lnumeroTreno, char *mappa){
 
 }
 
-void startJourney(char * cammino, long numeroTreno, FILE *logFile){
+void startJourney(char * cammino, long numeroTreno, FILE *logFile, char* mode){
 
 	// Questo array conterra' il percorso sottoforma di array
 	char *passiCammino[10];
@@ -92,6 +93,8 @@ void startJourney(char * cammino, long numeroTreno, FILE *logFile){
 	char *previousSegment = NULL;
 
 	printf("Il treno %lu e' partito \n", numeroTreno);
+
+	politicaSegmento takeSegmento = scegliStrategia(mode);  
 
 	for (int i = 0; i < numPassi; ++i){
 
@@ -130,7 +133,7 @@ void startJourney(char * cammino, long numeroTreno, FILE *logFile){
 			if (!isStazione(previousSegment))
 				liberaSegmento(previousSegment);
 
-			if(takeSegmento(numeroSegmento) == true){
+			if(takeSegmento(numeroSegmento, 0) == true){
 
 				printf("Il treno %lu ha occupato il segmento %i\n",numeroTreno, numeroSegmento);
 				// if (previousSegment != NULL) printf("Il segmento precedente e'%s\n", previousSegment);
@@ -147,6 +150,31 @@ void startJourney(char * cammino, long numeroTreno, FILE *logFile){
 	}
 
 	printf("Il treno %lu ha finito\n", numeroTreno);
+
+}
+
+bool takeSegmentETCS1(int numeroSegmento, int fantoccio) {
+
+	printf("politica ETCS1\n");
+	return true;
+
+}
+
+bool takeSemgneETCS2(int numeroSegmento, int RBC) {
+
+	printf("politica ETCS2\n");
+	return true;
+
+}
+
+politicaSegmento scegliStrategia(char *mode) {
+
+	if (strcmp(mode, "ETCS1") == 0) {
+		return takeSegmentETCS1;
+	}
+	else if(strcmp(mode, "ETCS2") == 0){
+		return takeSemgneETCS2;
+	}
 
 }
 
