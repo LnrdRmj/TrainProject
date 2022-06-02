@@ -22,18 +22,20 @@ int main(int argc, char *argv[]) {
 
   // Il primo argomento è il numero del treno
   char *numTreno = argv[1];
-  char *mappa = argv[2];
+  char *mode = argv[2];
+  char *mappa = argv[3];
+
+  printf("Mode treno %s\n", mode);
 
   // Converto la stringa in long
   char *tmp;
   long lnumeroTreno = strtol(numTreno, &tmp, 10);
 
   FILE *logFile = creaFileLogTreno(lnumeroTreno, logFile);
-  printf("%p\n", logFile);
 
   char *cammino = getCammino(lnumeroTreno, mappa);
 
-  printf("Cammino %s\n", cammino);
+  // printf("Cammino %s\n", cammino);
 
   startJourney(cammino, lnumeroTreno, logFile);
 
