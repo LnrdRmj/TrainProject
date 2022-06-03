@@ -1,4 +1,4 @@
-main: main.o segmentiManager.o treno registro
+main: main.o segmentiManager.o treno registro rbc
 	gcc main.o segmentiManager.o -o main
 
 main.o: main.c segmentiManager.h
@@ -25,5 +25,15 @@ treno: treno.o segmentiManager.o log.o
 treno.o: treno.c segmentiManager.h
 	gcc treno.c -c
 
-rbc: rbc.c
-	gcc rbc.c -o rbc
+rbc: rbc.o socketHelper.o
+	gcc rbc.o socketHelper.o -o rbc
+
+rbc.o: rbc.c socketHelper.h
+	gcc rbc.c -c
+
+socketHelper: socketHelper.c
+	gcc socketHelper.c -o socketHelper
+
+socketHelper.o: socketHelper.c socketHelper.h
+	gcc socketHelper.c -c
+
