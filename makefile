@@ -24,3 +24,6 @@ treno: treno.o segmentiManager.o log.o
 
 treno.o: treno.c segmentiManager.h
 	gcc treno.c -c
+
+rbc: rbc.c
+	gcc rbc.c -o rbc
