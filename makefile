@@ -2,16 +2,19 @@ main: main.o segmentiManager.o treno registro rbc
 	gcc main.o segmentiManager.o -o main
 
 main.o: main.c segmentiManager.h
-	gcc -c main.c
+	gcc main.c -c
 
-registro: registro.c
-	gcc registro.c -o registro
+registro: registro.o socketHelper.o
+	gcc registro.c socketHelper.o -o registro
 
-segmentiManager: segmentiManager.c
-	gcc segmentiManager.c -o segmentiManager
+registro.o: registro.c socketHelper.h
+	gcc registro.c -c
+
+segmentiManager: segmentiManager.o
+	gcc segmentiManager.o -o segmentiManager
 
 segmentiManager.o: segmentiManager.c
-	gcc -c segmentiManager.c
+	gcc segmentiManager.c -c
 
 log: log.c
 	gcc segmentiManager.c -o segmentiManager

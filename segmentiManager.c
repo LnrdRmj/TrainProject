@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdbool.h>
 #include <stdlib.h>
+
 #include "segmentiManager.h"
 
 #define PREFISSO "MA"

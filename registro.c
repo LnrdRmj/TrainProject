@@ -5,6 +5,8 @@
 #include <unistd.h>
 #include <string.h>
 
+#include "socketHelper.h"
+
 #define NUMERO_TRENI 5
 #define MAX_LUNGHEZZA_CAMMINO 100
 #define SERVER_NAME "serveRegistro"
@@ -14,25 +16,11 @@ void getCammino(char *, int, char *);
 
 int main() {
 
-  int serverFd = socket(AF_UNIX, SOCK_STREAM, 0);
-
-  struct sockaddr_un serverAddress;
-
-  serverAddress.sun_family = AF_UNIX;
-  strcpy(serverAddress.sun_path, SERVER_NAME);
-  unlink(SERVER_NAME);
-
-  bind(serverFd, (struct sockaddr*)&serverAddress, sizeof(serverAddress));
-
-  listen(serverFd, NUMERO_TRENI);
-
-  int cont = 0;
+  int serverFd = createServer(SERVER_NAME, NUMERO_TRENI);
 
   while(1) {
 
-    struct sockaddr_un clientAddress;
-    int sizeClient = sizeof(clientAddress);
-    int clientFd = accept(serverFd, (struct sockaddr*)&clientAddress, &sizeClient);
+    int clientFd = accettaRichiesta(serverFd);
 
     printf("Ricevuta una nuova connessione\n");
 

@@ -14,7 +14,7 @@
 #define ETCS1 "ETCS1"
 #define ETCS2 "ETCS2"
 #define PREFISSO_FILE_SEGMENTO "MA"
-#define DEBUG true
+#define DEBUG false
 
 typedef bool (*politicaSegmento) (int, int);
 
@@ -61,7 +61,7 @@ char* getCammino(long lnumeroTreno, char *mappa){
 
 	char *cammino = malloc(100);
 	read(serverFd, cammino, 100);
-	// printf("Il cammino del treno %s e': %s\n", numTreno, cammino);
+	if(DEBUG) printf("Il cammino del treno %lu e': %s\n", lnumeroTreno, cammino);
 
 	close(serverFd);
 
