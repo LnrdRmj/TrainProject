@@ -22,6 +22,13 @@ int main(int argc, char *argv[]) {
 
   creaFiles();
 
+  if (strcmp(argv[1], "ETCS2") == 0 && strcmp(argv[2], "RBC") == 0) {
+
+    execl("rbc", "rbc", NULL);
+
+    return 0;
+  }
+
   startRegistro();
 
   startTreni(argv[1], argv[2]);

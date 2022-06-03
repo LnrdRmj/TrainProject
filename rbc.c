@@ -12,13 +12,18 @@
 int main(int argc, char const *argv[])
 {
 	
+	printf("partito il server RBC\n");
+
 	int serverFd = createServer(SERVER_RBC_NAME, SERVER_QUEUE_LENGTH);
 
 	while(1) {
 
+		printf("aspetto connessioni\n");
 		int clientFd = accettaRichiesta(serverFd);
 
 	}
+
+	close(serverFd);
 
 	return 0;
 
