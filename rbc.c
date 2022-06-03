@@ -16,15 +16,44 @@ int main(int argc, char const *argv[])
 
 	int serverFd = createServer(SERVER_RBC_NAME, SERVER_QUEUE_LENGTH);
 
+	int pidFigli[10];
+	int figli = 0;
+
 	while(1) {
 
-		printf("aspetto connessioni\n");
 		int clientFd = accettaRichiesta(serverFd);
+
+		if((pidFigli[figli++] = fork()) == 0) {
+
+
+
+		}
+
+		for (int i = 0; i < 10; i++){
+
+			printf("%i ", pidFigli[i]);
+
+		}
+
+		printf("\n");
 
 	}
 
 	close(serverFd);
 
 	return 0;
+
+}
+
+void gestisciRichiesta(int clientFd) {
+
+	printf("richiesta gestita\n");
+
+	// while(1) {
+
+	// 	// TODO gestisci le richieste dei client finche non vieni terminato dal padre
+
+
+	// }
 
 }

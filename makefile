@@ -22,10 +22,10 @@ log: log.c
 log.o: log.c log.h
 	gcc log.c -c
 	
-treno: treno.o segmentiManager.o log.o
-	gcc treno.o segmentiManager.o log.o -o treno
+treno: treno.o segmentiManager.o log.o socketHelper.o
+	gcc treno.o segmentiManager.o log.o socketHelper.o -o treno
 
-treno.o: treno.c segmentiManager.h
+treno.o: treno.c segmentiManager.h log.h socketHelper.h
 	gcc treno.c -c
 
 rbc: rbc.o socketHelper.o

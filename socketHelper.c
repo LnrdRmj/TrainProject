@@ -6,6 +6,7 @@
 
 int accettaRichiesta(int);
 int createServer(const char*, int);
+int creaConnessioneAServer(const char*);
 
 int accettaRichiesta(int serverFd) {
 
@@ -28,6 +29,27 @@ int createServer(const char* serverName, int lunghezzaCodaServer) {
 	bind(serverFd, (struct sockaddr*)&serverAddress, sizeof(serverAddress));
 
 	listen(serverFd, lunghezzaCodaServer);
+
+	return serverFd;
+
+}
+
+int creaConnessioneAServer(const char* serverName) {
+
+	struct sockaddr_un registro;
+	registro.sun_family = AF_UNIX;
+	strcpy(registro.sun_path, serverName);
+
+	int serverFd = socket(AF_UNIX, SOCK_STREAM, 0);
+
+	int result;
+	do{
+		int serverLen = sizeof(registro);
+		result = connect(serverFd, (struct sockaddr*) &registro, serverLen);
+		if(result == -1) {
+			sleep(1);
+		}
+	}while(result == -1);
 
 	return serverFd;
 

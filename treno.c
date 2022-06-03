@@ -8,6 +8,7 @@
 
 #include "segmentiManager.h"
 #include "log.h"
+#include "socketHelper.h"
 
 #define SERVER_REGISTRO "serveRegistro"
 #define SERVER_RBC "serveRBC"
@@ -24,28 +25,28 @@ bool isStazione(char *);
 void liberaSegmento(char *);
 int splitString(char *, const char *, char *[]);
 politicaSegmento scegliStrategia(char *);
-int creaConnessioneAServer(const char*);
+// int creaConnessioneAServer(const char*);
 
 int main(int argc, char *argv[]) {
 
-  // Il primo argomento è il numero del treno
-  char *numTreno = argv[1];
-  char *mode = argv[2];
-  char *mappa = argv[3];
+	// Il primo argomento è il numero del treno
+	char *numTreno = argv[1];
+	char *mode = argv[2];
+	char *mappa = argv[3];
 
-  // Converto la stringa in long
-  char *tmp;
-  long lnumeroTreno = strtol(numTreno, &tmp, 10);
+	// Converto la stringa in long
+	char *tmp;
+	long lnumeroTreno = strtol(numTreno, &tmp, 10);
 
-  FILE *logFile = creaFileLogTreno(lnumeroTreno, logFile);
+	FILE *logFile = creaFileLogTreno(lnumeroTreno, logFile);
 
-  char *cammino = getCammino(lnumeroTreno, mappa);
+	char *cammino = getCammino(lnumeroTreno, mappa);
 
-  // printf("Cammino %s\n", cammino);
+	// printf("Cammino %s\n", cammino);
 
-  startJourney(cammino, lnumeroTreno, logFile, mode);
+	startJourney(cammino, lnumeroTreno, logFile, mode);
 
-  return 0;
+	return 0;
 
 }
 
@@ -150,11 +151,7 @@ void startJourney(char * cammino, long numeroTreno, FILE *logFile, char* mode){
 
 bool politicaETCS1(int numeroSegmento, int fantoccio) {
 
-	// printf("politica ETCS1\n");
-
-	bool result = takeSegmento(numeroSegmento);
-
-	return result;
+	return takeSegmento(numeroSegmento);
 
 }
 
@@ -188,27 +185,6 @@ void liberaSegmento(char *segmento){
 
 }
 //Helpers
-
-int creaConnessioneAServer(const char* serverName) {
-
-	struct sockaddr_un registro;
-	registro.sun_family = AF_UNIX;
-	strcpy(registro.sun_path, serverName);
-
-	int serverFd = socket(AF_UNIX, SOCK_STREAM, 0);
-
-	int result;
-	do{
-		int serverLen = sizeof(registro);
-		result = connect(serverFd, (struct sockaddr*) &registro, serverLen);
-		if(result == -1) {
-			sleep(1);
-		}
-	}while(result == -1);
-
-	return serverFd;
-
-}
 
 // Divide una stringa dato un delimitatore
 int splitString(char *toSplit, const char *delimiter, char *tokens[10]){
