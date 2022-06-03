@@ -132,7 +132,10 @@ void startJourney(char * cammino, long numeroTreno, FILE *logFile, char* mode){
 
 			}
 			else {
-				if (DEBUG)
+				// Se si blocca allora deve rimanere sullo stesso segmento
+				// quindi diminuisco di uno l'indice
+				--i;
+				if (true)
 				printf("Il treno %lu si e' bloccato sul segmento %s bloccato\n", numeroTreno, segmento);
 			}
 
@@ -147,11 +150,11 @@ void startJourney(char * cammino, long numeroTreno, FILE *logFile, char* mode){
 
 bool politicaETCS1(int numeroSegmento, int fantoccio) {
 
-	printf("politica ETCS1\n");
+	// printf("politica ETCS1\n");
 
-	// bool result = takeSegmento(numeroSegmento);
+	bool result = takeSegmento(numeroSegmento);
 
-	return true;
+	return result;
 
 }
 
@@ -179,7 +182,7 @@ void liberaSegmento(char *segmento){
 	if (segmento != NULL) {
 		int numeroSegmento = getNumeroSegmentoDaStringa(segmento);
 		freeSegmento(numeroSegmento);
-		printf("liberato %i\n", numeroSegmento);
+		if (DEBUG) printf("liberato %i\n", numeroSegmento);
 		// printf("Ho liberato il segmento %s\n", segmento);
 	}
 
