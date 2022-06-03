@@ -9,9 +9,12 @@
 #include "segmentiManager.h"
 #include "log.h"
 
-#define SERVER_NAME "serveRegistro"
+#define SERVER_REGISTRO "serveRegistro"
+#define SERVER_RBC "serveRBC"
+#define ETCS1 "ETCS1"
+#define ETCS2 "ETCS2"
 #define PREFISSO_FILE_SEGMENTO "MA"
-#define DEBUG false
+#define DEBUG true
 
 typedef bool (*politicaSegmento) (int, int);
 
@@ -21,6 +24,7 @@ bool isStazione(char *);
 void liberaSegmento(char *);
 int splitString(char *, const char *, char *[]);
 politicaSegmento scegliStrategia(char *);
+int creaConnessioneAServer(const char*);
 
 int main(int argc, char *argv[]) {
 
@@ -47,37 +51,21 @@ int main(int argc, char *argv[]) {
 
 char* getCammino(long lnumeroTreno, char *mappa){
 
-  struct sockaddr_un registro;
-  registro.sun_family = AF_UNIX;
-  strcpy(registro.sun_path, SERVER_NAME);
+	int serverFd = creaConnessioneAServer(SERVER_REGISTRO);
 
-  int serverFd = socket(AF_UNIX, SOCK_STREAM, 0);
+	char *buffer;
+	asprintf(&buffer, "%i", lnumeroTreno); 
 
-  int result;
-  do{
-    int serverLen = sizeof(registro);
-    result = connect(serverFd, (struct sockaddr*) &registro, serverLen);
-    if(result == -1) {
-    	sleep(1);
-    }
-  }while(result == -1);
+	char *dataForServer = strcat(buffer, mappa);
+	write(serverFd, dataForServer, strlen(dataForServer) + 1);
 
-  // char *tmp;
-  // long lnumeroTreno = strtol(numTreno, &tmp, 10);
+	char *cammino = malloc(100);
+	read(serverFd, cammino, 100);
+	// printf("Il cammino del treno %s e': %s\n", numTreno, cammino);
 
-  char *buffer;
-  asprintf(&buffer, "%i", lnumeroTreno); 
+	close(serverFd);
 
-  char *dataForServer = strcat(buffer, mappa);
-  write(serverFd, dataForServer, strlen(dataForServer) + 1);
-
-  char *cammino = malloc(100);
-  read(serverFd, cammino, 100);
-  // printf("Il cammino del treno %s e': %s\n", numTreno, cammino);
-
-  close(serverFd);
-
-  return cammino;
+	return cammino;
 
 }
 
@@ -92,7 +80,11 @@ void startJourney(char * cammino, long numeroTreno, FILE *logFile, char* mode){
 	if (DEBUG)
 		printf("Il treno %lu e' partito \n", numeroTreno);
 
-	politicaSegmento takeSegmento = scegliStrategia(mode);  
+	int serverRBC = -1;
+	if(strcmp(mode, ETCS2) == 0)
+		serverRBC = creaConnessioneAServer(SERVER_RBC);
+
+	politicaSegmento takeSegmento = scegliStrategia(mode);
 
 	for (int i = 0; i < numPassi; ++i){
 
@@ -133,7 +125,7 @@ void startJourney(char * cammino, long numeroTreno, FILE *logFile, char* mode){
 			if (!isStazione(previousSegment))
 				liberaSegmento(previousSegment);
 
-			if(takeSegmento(numeroSegmento, 0) == true){
+			if(takeSegmento(numeroSegmento, serverRBC) == true){
 
 				if (DEBUG)
 				printf("Il treno %lu ha occupato il segmento %i\n",numeroTreno, numeroSegmento);
@@ -153,14 +145,17 @@ void startJourney(char * cammino, long numeroTreno, FILE *logFile, char* mode){
 
 }
 
-bool takeSegmentETCS1(int numeroSegmento, int fantoccio) {
+bool politicaETCS1(int numeroSegmento, int fantoccio) {
 
 	printf("politica ETCS1\n");
+
+	// bool result = takeSegmento(numeroSegmento);
+
 	return true;
 
 }
 
-bool takeSemgneETCS2(int numeroSegmento, int RBC) {
+bool politicaETCS2(int numeroSegmento, int RBC) {
 
 	printf("politica ETCS2\n");
 	return true;
@@ -170,10 +165,10 @@ bool takeSemgneETCS2(int numeroSegmento, int RBC) {
 politicaSegmento scegliStrategia(char *mode) {
 
 	if (strcmp(mode, "ETCS1") == 0) {
-		return takeSegmentETCS1;
+		return politicaETCS1;
 	}
 	else if(strcmp(mode, "ETCS2") == 0){
-		return takeSemgneETCS2;
+		return politicaETCS2;
 	}
 
 }
@@ -191,7 +186,28 @@ void liberaSegmento(char *segmento){
 }
 //Helpers
 
-// Divide una stringa
+int creaConnessioneAServer(const char* serverName) {
+
+	struct sockaddr_un registro;
+	registro.sun_family = AF_UNIX;
+	strcpy(registro.sun_path, serverName);
+
+	int serverFd = socket(AF_UNIX, SOCK_STREAM, 0);
+
+	int result;
+	do{
+		int serverLen = sizeof(registro);
+		result = connect(serverFd, (struct sockaddr*) &registro, serverLen);
+		if(result == -1) {
+			sleep(1);
+		}
+	}while(result == -1);
+
+	return serverFd;
+
+}
+
+// Divide una stringa dato un delimitatore
 int splitString(char *toSplit, const char *delimiter, char *tokens[10]){
 
 	int i = 0;
