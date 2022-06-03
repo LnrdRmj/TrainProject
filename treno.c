@@ -11,6 +11,7 @@
 
 #define SERVER_NAME "serveRegistro"
 #define PREFISSO_FILE_SEGMENTO "MA"
+#define DEBUG false
 
 typedef bool (*politicaSegmento) (int, int);
 
@@ -86,13 +87,10 @@ void startJourney(char * cammino, long numeroTreno, FILE *logFile, char* mode){
 	char *passiCammino[10];
 
 	int numPassi = splitString(cammino, ";", passiCammino);
-	printf("Il cammino ha %i passi\n", numPassi);
-	// char *segmento = strtok(cammino, ";");
-	// // Salto la prima stazione tanto non mi serve
-	// segmento = strtok(NULL, ";");
 	char *previousSegment = NULL;
 
-	printf("Il treno %lu e' partito \n", numeroTreno);
+	if (DEBUG)
+		printf("Il treno %lu e' partito \n", numeroTreno);
 
 	politicaSegmento takeSegmento = scegliStrategia(mode);  
 
@@ -115,7 +113,9 @@ void startJourney(char * cammino, long numeroTreno, FILE *logFile, char* mode){
 				logFineViaggio(segmento, logFile);	
 			}
 
-			printf("Stazione %s\n", segmento);
+			if(DEBUG)
+				printf("Stazione %s\n", segmento);
+
 			liberaSegmento(previousSegment);
 
 		}
@@ -135,14 +135,14 @@ void startJourney(char * cammino, long numeroTreno, FILE *logFile, char* mode){
 
 			if(takeSegmento(numeroSegmento, 0) == true){
 
+				if (DEBUG)
 				printf("Il treno %lu ha occupato il segmento %i\n",numeroTreno, numeroSegmento);
-				// if (previousSegment != NULL) printf("Il segmento precedente e'%s\n", previousSegment);
 
 			}
 			else {
+				if (DEBUG)
 				printf("Il treno %lu si e' bloccato sul segmento %s bloccato\n", numeroTreno, segmento);
 			}
-			// printf("%c\n", *segmentoOccupato);
 
 		}
 		sleep(1);
