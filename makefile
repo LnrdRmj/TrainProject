@@ -18,7 +18,7 @@ log: log.c
 
 log.o: log.c log.h
 	gcc log.c -c
-	
+
 treno: treno.o segmentiManager.o log.o
 	gcc treno.o segmentiManager.o log.o -o treno
 

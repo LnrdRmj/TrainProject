@@ -1,3 +1,7 @@
 segmenti/
 log/
+bin/
+*
+!*.*
 *.o
+!makefile
