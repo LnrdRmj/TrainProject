@@ -4,10 +4,13 @@
 #include <sys/un.h>
 #include <unistd.h>
 
+#include "segmentiManager.h"
 #include "socketHelper.h"
 
 #define SERVER_RBC_NAME "serverRBC"
 #define SERVER_QUEUE_LENGTH 10
+
+void gestisciRichiesta(int);
 
 int main(int argc, char const *argv[])
 {
@@ -22,10 +25,11 @@ int main(int argc, char const *argv[])
 	while(1) {
 
 		int clientFd = accettaRichiesta(serverFd);
+		printf("nuova connessione a RBC\n");
 
 		if((pidFigli[figli++] = fork()) == 0) {
 
-
+			gestisciRichiesta(clientFd);
 
 		}
 
@@ -47,13 +51,13 @@ int main(int argc, char const *argv[])
 
 void gestisciRichiesta(int clientFd) {
 
-	printf("richiesta gestita\n");
+	while(1) {
 
-	// while(1) {
+		char buffer[1024];
+	    read(clientFd, buffer, 1024);
 
-	// 	// TODO gestisci le richieste dei client finche non vieni terminato dal padre
+	    printf("RBC - Ho letto %s\n", buffer);
 
-
-	// }
+	}
 
 }

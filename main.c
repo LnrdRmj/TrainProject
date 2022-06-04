@@ -52,7 +52,7 @@ void startTreni(char *mode,char mappa[10]) {
 
   // printf("I treni usano la mappa %s\n", mappa);
   //NUMERO_PROCESSI_TRENI
-  for (int i = 0; i < NUMERO_PROCESSI_TRENI; i++) {
+  for (int i = 0; i < 1; i++) {
 
     // Fai partire i proessi treni
     int pid = fork();
