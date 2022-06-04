@@ -18,7 +18,7 @@
 #define DEBUG true
 
 typedef bool (*politicaSegmento) (int, int);
-typedef void (*politicaRilascio) (char*, int);
+typedef void (*politicaRilascio) (int, int);
 
 char* getCammino(long, char *);
 void startJourney(char *, long, FILE *, char*);
@@ -91,9 +91,14 @@ void startJourney(char * cammino, long numeroTreno, FILE *logFile, char* mode){
 	politicaRilascio rilascioSegmento = scegliStrategiaRilascio(mode);
 
 	for (int i = 0; i < numPassi; ++i){
+		printf("%s\n", passiCammino[i]);
+	}
+
+	for (int i = 0; i < numPassi; ++i){
 
 		char *segmento = malloc(10);
 		strcpy(segmento, passiCammino[i]);
+		printf("segmetno stringa = %s\n", segmento);
 
 		if (i > 0) {
 			previousSegment = malloc(10);
@@ -113,25 +118,22 @@ void startJourney(char * cammino, long numeroTreno, FILE *logFile, char* mode){
 				printf("Stazione %s\n", segmento);
 
 			if (previousSegment != NULL)
-				rilascioSegmento(previousSegment, serverRBC);
-
-			printf("arriva\n");
+				rilascioSegmento(getNumeroSegmentoDaStringa(previousSegment), serverRBC);
 
 		}
 		// Allora e' un segmento
 		else{
 
 			logStatoTreno(segmento, passiCammino[i + 1], logFile);
-
+			printf("segmetno prima %s\n", segmento);
 			int numeroSegmento = getNumeroSegmentoDaStringa(segmento);
 			// printf("%s: il numero del segmetno e: %i\n", segmento, numeroSegmento);
-			char *segmentoOccupato = malloc(1);
-			readSegmento(numeroSegmento, segmentoOccupato);
 
 			// Libero se e' un segmento
 			if (!isStazione(previousSegment))
-				rilascioSegmento(previousSegment, serverRBC);
+				rilascioSegmento(getNumeroSegmentoDaStringa(previousSegment), serverRBC);
 
+			printf("numsero segmetno = %i\n", numeroSegmento);
 			if(takeSegmento(numeroSegmento, serverRBC) == true){
 
 				if (DEBUG)
@@ -165,15 +167,15 @@ bool politicaETCS2(int numeroSegmento, int serverRBC) {
 
 	printf("%i\n", numeroSegmento);
 	// printf("Sto prendendo un segmento\n");	
-	char *message;
+	char *message = malloc(5);
 	sprintf(message, "O%i", numeroSegmento); //O per Occupa
-
-	printf("%s\n", message);
 	write(serverRBC, message, strlen(message) + 1);
 
-	// printf("Ho preso un segmento\n");
+	char *response = malloc(1);
+    read(serverRBC, response, 1);
+    // printf("Response da RBC %s\n", response);
 
-	return true;
+	return *response == '1';
 
 }
 
@@ -188,16 +190,16 @@ politicaSegmento scegliStrategia(char *mode) {
 
 }
 
-void politicaRilascioETCS1(char* segmento, int fantoccio) {
+void politicaRilascioETCS1(int segmento, int fantoccio) {
 
-	freeSegmento(getNumeroSegmentoDaStringa(segmento));
+	freeSegmento(segmento);
 
 }
 
-void politicaRilascioETCS2(char* segmento, int serverRBC) {
-	
-	char* message = "L"; //L per "Libera"
-	strcat(message, segmento);
+void politicaRilascioETCS2(int segmento, int serverRBC) {
+
+	char message[10]; //L per "Libera"
+	sprintf(message, "L%i", segmento);
 
 	// printf("Sto mandando il rilascio %s\n", message);	
 	write(serverRBC, message, strlen(message) + 1);
@@ -217,17 +219,6 @@ politicaRilascio scegliStrategiaRilascio(char *mode) {
 
 }
 
-// void liberaSegmento(char *segmento){
-
-// 	// Se il segmento passato e valido allora li libero
-// 	if (segmento != NULL) {
-// 		int numeroSegmento = getNumeroSegmentoDaStringa(segmento);
-// 		freeSegmento(numeroSegmento);
-// 		if (DEBUG) printf("liberato %i\n", numeroSegmento);
-// 		// printf("Ho liberato il segmento %s\n", segmento);
-// 	}
-
-// }
 //Helpers
 
 // Divide una stringa dato un delimitatore
