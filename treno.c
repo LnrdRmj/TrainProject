@@ -91,14 +91,9 @@ void startJourney(char * cammino, long numeroTreno, FILE *logFile, char* mode){
 	politicaRilascio rilascioSegmento = scegliStrategiaRilascio(mode);
 
 	for (int i = 0; i < numPassi; ++i){
-		printf("%s\n", passiCammino[i]);
-	}
-
-	for (int i = 0; i < numPassi; ++i){
 
 		char *segmento = malloc(10);
 		strcpy(segmento, passiCammino[i]);
-		printf("segmetno stringa = %s\n", segmento);
 
 		if (i > 0) {
 			previousSegment = malloc(10);
@@ -125,7 +120,7 @@ void startJourney(char * cammino, long numeroTreno, FILE *logFile, char* mode){
 		else{
 
 			logStatoTreno(segmento, passiCammino[i + 1], logFile);
-			printf("segmetno prima %s\n", segmento);
+
 			int numeroSegmento = getNumeroSegmentoDaStringa(segmento);
 			// printf("%s: il numero del segmetno e: %i\n", segmento, numeroSegmento);
 
@@ -133,7 +128,6 @@ void startJourney(char * cammino, long numeroTreno, FILE *logFile, char* mode){
 			if (!isStazione(previousSegment))
 				rilascioSegmento(getNumeroSegmentoDaStringa(previousSegment), serverRBC);
 
-			printf("numsero segmetno = %i\n", numeroSegmento);
 			if(takeSegmento(numeroSegmento, serverRBC) == true){
 
 				if (DEBUG)
@@ -165,17 +159,19 @@ bool politicaETCS1(int numeroSegmento, int fantoccio) {
 
 bool politicaETCS2(int numeroSegmento, int serverRBC) {
 
-	printf("%i\n", numeroSegmento);
-	// printf("Sto prendendo un segmento\n");	
-	char *message = malloc(5);
-	sprintf(message, "O%i", numeroSegmento); //O per Occupa
-	write(serverRBC, message, strlen(message) + 1);
+	// printf("Sto prendendo un segmento\n");
+	char *message = malloc(3);
+	sprintf(message, "O%i\0", numeroSegmento); //O per Occupa
+	printf("messagio occupazione %s\n", message);
+	send(serverRBC, message, strlen(message) + 1, 0);
 
 	char *response = malloc(1);
-    read(serverRBC, response, 1);
-    // printf("Response da RBC %s\n", response);
+	printf("aspett response occupazione\n");
+    recv(serverRBC, response, 1, 0);
+    printf("Response da RBC %s\n", response);
 
 	return *response == '1';
+	return true;
 
 }
 
@@ -199,10 +195,10 @@ void politicaRilascioETCS1(int segmento, int fantoccio) {
 void politicaRilascioETCS2(int segmento, int serverRBC) {
 
 	char message[10]; //L per "Libera"
-	sprintf(message, "L%i", segmento);
+	sprintf(message, "L%i\0", segmento);
 
-	// printf("Sto mandando il rilascio %s\n", message);	
-	write(serverRBC, message, strlen(message) + 1);
+	printf("messagio rilascio %s\n", message);	
+	send(serverRBC, message, strlen(message) + 1, 0);
 	// printf("mandato il rilascio\n");
 
 	return;

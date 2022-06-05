@@ -57,12 +57,13 @@ void gestisciRichiesta(int clientFd) {
 
 	while(1) {
 
-		char messaggio[10];
-	    read(clientFd, messaggio, 10);
+		char *messaggio = malloc(10);
+		printf("Aspetto una nuoca richiesta\n");
+	    recv(clientFd, messaggio, 10, 0);
 
 	    printf("RBC - Ho letto %s\n", messaggio);
 
-	    if (isRichiestaOccupazione(&messaggio) == true){
+	    if (isRichiestaOccupazione(messaggio) == true){
 
 	    	gestisciOccupazione(clientFd, messaggio);
 
@@ -70,7 +71,6 @@ void gestisciRichiesta(int clientFd) {
 	    else {
 
 	    	gestisciRilascio(clientFd, messaggio);
-	    	printf("finisce\n");
 
 	    }
 
@@ -82,32 +82,35 @@ void gestisciRilascio (int clientFd, char* messaggio){
 
 	// Salto la prima lettera
 	messaggio++;
-	printf("%lu\n", strtol(messaggio, NULL, 10));
 	freeSegmento(strtol(messaggio, NULL, 10));
+	printf("segmento liberato %lu\n", strtol(messaggio, NULL, 10));
 
 }
 
 void gestisciOccupazione(int clientFd, char* messaggio) {
 
-	char response;
+	char *response = malloc(2);
 
 	// Salto la prima lettera
 	messaggio++;
 
 	if (takeSegmento(strtol(messaggio, NULL, 10))) {
 
-		printf("segmento preso\n");
-		response = '1';
+		printf("segmento %lu preso\n", strtol(messaggio, NULL, 10));
+		*response = '1';
 
 	}
 	else {
 
-		printf("segmento non preso\n");
-		response = '0';
+		printf("segmento %lu non preso\n", strtol(messaggio, NULL, 10));
+		*response = '0';
 
 	}
 
-	write(clientFd, &response, 1);
+	*(response + 1) = '2';
+
+	printf("server - Mando %s\n", response);
+	send(clientFd, response, strlen(response) + 1, 0);
 
 }
 
