@@ -147,6 +147,7 @@ void startJourney(char * cammino, long numeroTreno, FILE *logFile, char* mode){
 
 	}
 
+	close(serverRBC);
 	printf("Il treno %lu ha finito\n", numeroTreno);
 
 }
@@ -160,14 +161,14 @@ bool politicaETCS1(int numeroSegmento, int fantoccio) {
 bool politicaETCS2(int numeroSegmento, int serverRBC) {
 
 	// printf("Sto prendendo un segmento\n");
-	char *message = malloc(3);
-	sprintf(message, "O%i\0", numeroSegmento); //O per Occupa
+	char *message = malloc(10);
+	sprintf(message, "O%i", numeroSegmento); //O per Occupa
 	printf("messagio occupazione %s\n", message);
-	send(serverRBC, message, strlen(message) + 1, 0);
+	send(serverRBC, message, 10, 0);
 
-	char *response = malloc(1);
+	char *response = malloc(10);
 	printf("aspett response occupazione\n");
-    recv(serverRBC, response, 1, 0);
+    recv(serverRBC, response, 10, 0);
     printf("Response da RBC %s\n", response);
 
 	return *response == '1';
@@ -194,11 +195,11 @@ void politicaRilascioETCS1(int segmento, int fantoccio) {
 
 void politicaRilascioETCS2(int segmento, int serverRBC) {
 
-	char message[10]; //L per "Libera"
-	sprintf(message, "L%i\0", segmento);
+	char *message = malloc(10); //L per "Libera"
+	sprintf(message, "L%i", segmento);
 
 	printf("messagio rilascio %s\n", message);	
-	send(serverRBC, message, strlen(message) + 1, 0);
+	send(serverRBC, message, 10, 0);
 	// printf("mandato il rilascio\n");
 
 	return;

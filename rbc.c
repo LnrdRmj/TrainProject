@@ -55,7 +55,7 @@ int main(int argc, char const *argv[])
 
 void gestisciRichiesta(int clientFd) {
 
-	while(1) {
+	while(1 && clientFd != 0) {
 
 		char *messaggio = malloc(10);
 		printf("Aspetto una nuoca richiesta\n");
@@ -89,7 +89,7 @@ void gestisciRilascio (int clientFd, char* messaggio){
 
 void gestisciOccupazione(int clientFd, char* messaggio) {
 
-	char *response = malloc(2);
+	char *response = malloc(10);
 
 	// Salto la prima lettera
 	messaggio++;
@@ -107,10 +107,8 @@ void gestisciOccupazione(int clientFd, char* messaggio) {
 
 	}
 
-	*(response + 1) = '2';
-
 	printf("server - Mando %s\n", response);
-	send(clientFd, response, strlen(response) + 1, 0);
+	send(clientFd, response, 10, 0);
 
 }
 
