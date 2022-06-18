@@ -13,6 +13,25 @@
 
 void stampaMappa (const char mappa[NUMERO_TRENI][MAX_LUNGHEZZA_CAMMINO][10]);
 void getCammino(char *, int, char *);
+void gestisciRBC(int, char[1024]);
+void sendMappaIntera(int, char);
+void gestisciTreno(int, char [1024]);
+
+char mappa1[NUMERO_TRENI][MAX_LUNGHEZZA_CAMMINO] = {
+    { "S1;MA1;MA2;MA3;MA8;S6" },
+    { "S2;MA5;MA6;MA7;MA3;MA8;S6" },
+    { "S7;MA13;MA12;MA11;MA10;MA9;S3" },
+    { "S4;MA14;MA15;MA16;MA12;S8" },
+    { "" },
+  };
+
+char mappa2[NUMERO_TRENI][MAX_LUNGHEZZA_CAMMINO] = {
+  { "S2;MA5;MA6;MA7;MA3;MA8;S6" },
+  { "S3;MA9;MA10;MA11;MA12;S8" },
+  { "S4;MA14;MA15;MA16;MA12;S8" },
+  { "S6;MA8;MA3;MA2;MA1;S1" },
+  { "S5;MA4;MA3;MA2;MA1;S1" },
+};
 
 int main() {
 
@@ -29,22 +48,11 @@ int main() {
 
     if (buffer[0] == 'A'){
 
-      printf("arrivato rbc\n");
+      gestisciRBC(clientFd, buffer);
 
     }else{
 
-      int numeroTreno = atoi(&buffer[0]);
-    
-      char *mappa = malloc(7);
-      memcpy(mappa, &buffer[1], 6);
-      mappa[6] = '\0';
-
-      char *cammino = malloc( MAX_LUNGHEZZA_CAMMINO );
-      getCammino(cammino, numeroTreno, mappa);
-      // printf("%s\n", cammino);
-      write(clientFd, cammino, strlen(cammino) + 1);
-
-      close(clientFd);
+      gestisciTreno(clientFd, buffer);
 
     }
 
@@ -56,23 +64,59 @@ int main() {
 
 }
 
+void gestisciRBC(int clientFd, char buffer[1024]) {
+
+    printf("arrivato rbc\n");
+    sendMappaIntera(clientFd, buffer[1]);
+
+}
+
+void sendMappaIntera(int clientFd, char numeroMappa) {
+
+  char *mappaIntera = malloc(256);
+  char *tmp = mappaIntera;
+  
+  for (int i = 0; i < NUMERO_TRENI; ++i)
+  {
+
+    if (numeroMappa == '1'){
+      strcpy(tmp, mappa1[i]);
+      tmp += strlen(mappa2[i]);
+      *tmp = '/';
+      tmp++;
+    }
+    else if (numeroMappa == '2'){
+      strcpy(tmp, mappa2[i]);
+      tmp += strlen(mappa2[i]);
+      *tmp = '/';
+      tmp++;
+    }
+
+  }
+
+  send(clientFd, mappaIntera, 1024, 0);
+  printf("risultato: %s\n", mappaIntera);
+
+}
+
+void gestisciTreno(int clientFd, char buffer[1024]) {
+
+    int numeroTreno = atoi(&buffer[0]);
+    
+    char *mappa = malloc(7);
+    memcpy(mappa, &buffer[1], 6);
+    mappa[6] = '\0';
+
+    char *cammino = malloc( MAX_LUNGHEZZA_CAMMINO );
+    getCammino(cammino, numeroTreno, mappa);
+    // printf("%s\n", cammino);
+    write(clientFd, cammino, strlen(cammino) + 1);
+
+    close(clientFd);
+
+}
+
 void getCammino(char* cammino, int treno, char* mappa){
-
- char mappa1[NUMERO_TRENI][MAX_LUNGHEZZA_CAMMINO] = {
-    { "S1;MA1;MA2;MA3;MA8;S6" },
-    { "S2;MA5;MA6;MA7;MA3;MA8;S6" },
-    { "S7;MA13;MA12;MA11;MA10;MA9;S3" },
-    { "S4;MA14;MA15;MA16;MA12;S8" },
-    { "" },
-  };
-
-  char mappa2[NUMERO_TRENI][MAX_LUNGHEZZA_CAMMINO] = {
-    { "S2;MA5;MA6;MA7;MA3;MA8;S6" },
-    { "S3;MA9;MA10;MA11;MA12;S8" },
-    { "S4;MA14;MA15;MA16;MA12;S8" },
-    { "S6;MA8;MA3;MA2;MA1;S1" },
-    { "S5;MA4;MA3;MA2;MA1;S1" },
-  };
 
   int i = 0;
 

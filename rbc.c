@@ -76,10 +76,13 @@ char* getPercorsi(int registroFd, char * mappa){
 
 	char * message = malloc(10);
 
-	sprintf(message, "%c", mappa[5]);
+	sprintf(message, "A%c", mappa[5]);
 	printf("%s\n", message);
 
 	send(registroFd, message, 10, 0);
+
+	recv(registroFd, message, 1024, 0);
+	printf("%s\n", message);
 
 }
 
