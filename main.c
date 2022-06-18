@@ -24,7 +24,8 @@ int main(int argc, char *argv[]) {
 
   if (strcmp(argv[1], "ETCS2") == 0 && strcmp(argv[2], "RBC") == 0) {
 
-    execl("rbc", "rbc", NULL);
+
+    execl("rbc", "rbc", argv[3], NULL);
 
     return 0;
   }
