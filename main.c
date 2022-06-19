@@ -59,10 +59,10 @@ void startTreni(char *mode,char mappa[10]) {
     int pid = fork();
     if (pid == 0){
 
-      char *buffer;
-      asprintf(&buffer, "%i", i);
+      char *numeroTreno;
+      asprintf(&numeroTreno, "%i", i);
 
-      execl("treno", "treno", buffer, mode, mappa, NULL);
+      execl("treno", "treno", numeroTreno, mode, mappa, NULL);
 
     }
 

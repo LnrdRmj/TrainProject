@@ -12,24 +12,27 @@
 #define SERVER_QUEUE_LENGTH 10
 #define NUMERO_TRATTE 16
 #define NUMERO_TRENI 5
+#define NUMERO_STAZIONI 8
 #define SERVER_REGISTRO "serveRegistro"
 
 void gestisciRichiesta(int);
 void gestisciRilascio (int, char*);
 void gestisciOccupazione(int, char*);
 bool isRichiestaOccupazione(char *);
+bool isRichiestaLiberazione(char *);
+bool isRichiestaStazione(char *);
 char* getPercorsi(int, char *);
+void setup();
 
 bool segmenti[NUMERO_TRATTE];
+int stazioni[NUMERO_STAZIONI];
 
 int main(int argc, char const *argv[])
 {
 	
 	printf("partito il server RBC\n");
 
-	for (int i = 0; i < NUMERO_TRATTE; ++i){
-		segmenti[i] = false;
-	}
+	setup();
 
 	char *mappa = argv[1];
 	
@@ -37,6 +40,7 @@ int main(int argc, char const *argv[])
 
 	char *percorsi = getPercorsi(registroFd, mappa);
 
+	printf("tutto a posto\n");
 	return 1;
 
 	int serverFd = createServer(SERVER_RBC_NAME, SERVER_QUEUE_LENGTH);
@@ -55,19 +59,33 @@ int main(int argc, char const *argv[])
 
 		}
 
-		for (int i = 0; i < 10; i++){
+		// for (int i = 0; i < 10; i++){
 
-			printf("%i ", pidFigli[i]);
+		// 	printf("%i ", pidFigli[i]);
 
-		}
+		// }
 
-		printf("\n");
+		// printf("\n");
 
 	}
 
 	close(serverFd);
 
 	return 0;
+
+}
+
+void setup() {
+
+	// Inizializzo lo stato dei segmenti
+	for (int i = 0; i < NUMERO_TRATTE; ++i){
+		segmenti[i] = false;
+	}
+
+	// Inizializzo lo stato delle stazioni
+	for (int i = 0; i < NUMERO_STAZIONI; ++i){
+		stazioni[i] = 0;
+	}
 
 }
 
@@ -83,6 +101,8 @@ char* getPercorsi(int registroFd, char * mappa){
 
 	recv(registroFd, message, 1024, 0);
 	printf("%s\n", message);
+
+	return message;
 
 }
 
@@ -101,9 +121,14 @@ void gestisciRichiesta(int clientFd) {
 	    	gestisciOccupazione(clientFd, messaggio);
 
 	    }
-	    else {
+	    else if (isRichiestaLiberazione(messaggio) == true){
 
 	    	gestisciRilascio(clientFd, messaggio);
+
+	    }
+	    else if(isRichiestaStazione(messaggio) == true){
+
+	    	// Acetta sempre la richiesta
 
 	    }
 
@@ -115,7 +140,8 @@ void gestisciRilascio (int clientFd, char* messaggio){
 
 	// Salto la prima lettera
 	messaggio++;
-	freeSegmento(strtol(messaggio, NULL, 10));
+	//libero il segmento
+	segmenti[strtol(messaggio, NULL, 10)] = false;
 	printf("segmento liberato %lu\n", strtol(messaggio, NULL, 10));
 
 }
@@ -127,12 +153,14 @@ void gestisciOccupazione(int clientFd, char* messaggio) {
 	// Salto la prima lettera
 	messaggio++;
 
-	if (takeSegmento(strtol(messaggio, NULL, 10))) {
+	// Se il segmento e' libero allora lo occupo
+	if (segmenti[strtol(messaggio, NULL, 10)] == false) {
 
 		printf("segmento %lu preso\n", strtol(messaggio, NULL, 10));
 		*response = '1';
 
 	}
+	// Altrimenti era gia occupato
 	else {
 
 		printf("segmento %lu non preso\n", strtol(messaggio, NULL, 10));
@@ -148,6 +176,18 @@ void gestisciOccupazione(int clientFd, char* messaggio) {
 bool isRichiestaOccupazione(char *richiesta) {
 
 	return *richiesta == 'O';
+
+}
+
+bool isRichiestaLiberazione(char *richiesta) {
+
+	return *richiesta == 'L';
+
+}
+
+bool isRichiestaStazione(char *richiesta) {
+
+	return *richiesta == 'S';
 
 }
 

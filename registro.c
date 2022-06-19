@@ -75,13 +75,13 @@ void sendMappaIntera(int clientFd, char numeroMappa) {
 
   char *mappaIntera = malloc(256);
   char *tmp = mappaIntera;
-  
+
   for (int i = 0; i < NUMERO_TRENI; ++i)
   {
 
     if (numeroMappa == '1'){
       strcpy(tmp, mappa1[i]);
-      tmp += strlen(mappa2[i]);
+      tmp += strlen(mappa1[i]);
       *tmp = '/';
       tmp++;
     }
