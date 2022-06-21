@@ -4,6 +4,7 @@
 #include <sys/un.h>
 #include <unistd.h>
 #include <stdbool.h>
+#include <poll.h>
 
 #include "segmentiManager.h"
 #include "socketHelper.h"
@@ -16,10 +17,11 @@
 #define SERVER_REGISTRO "serveRegistro"
 
 void gestisciRichiesta(int);
-void gestisciRilascio (int, char*);
+// void gestisciRilascio (int, char*);
 void gestisciOccupazione(int, char*);
+void gestisciVerificaSegmentoLibero(int, char *);
 bool isRichiestaOccupazione(char *);
-bool isRichiestaLiberazione(char *);
+bool isRichiestaVerificaSegmentoLibero(char *);
 bool isRichiestaStazione(char *);
 char* getPercorsi(int, char *);
 void setup();
@@ -36,36 +38,71 @@ int main(int argc, char const *argv[])
 
 	char *mappa = argv[1];
 	
-	int registroFd = creaConnessioneAServer(SERVER_REGISTRO);
-
-	char *percorsi = getPercorsi(registroFd, mappa);
-
-	printf("tutto a posto\n");
-	return 1;
+	// int registroFd = creaConnessioneAServer(SERVER_REGISTRO);
+	
+	// char *percorsi = getPercorsi(registroFd, mappa);
 
 	int serverFd = createServer(SERVER_RBC_NAME, SERVER_QUEUE_LENGTH);
+	// ioctl(serverFd, );
 
-	int pidFigli[10];
-	int figli = 0;
+	int clientConnessi = 0;
+	int nfds = 3;
+	struct pollfd *fds = malloc(nfds * sizeof(struct pollfd));
+	
+	fds[0].fd = serverFd;
+	fds[0].events = POLLIN;
+
+	for (int i = 1; i < nfds; ++i)
+	{
+
+		fds[i].fd = -1;
+		fds[i].events = POLLIN;
+
+	}
 
 	while(1) {
 
-		int clientFd = accettaRichiesta(serverFd);
-		printf("nuova connessione a RBC\n");
+		printf("Aspetto connessioni o richeista dai treni\n");
+		poll(fds, nfds, -1);
 
-		if((pidFigli[figli++] = fork()) == 0) {
+		for (int i = 0; i < nfds; ++i)
+		{
+			
+			if (fds[i].revents == 0) continue;
 
-			gestisciRichiesta(clientFd);
+			if (fds[i].fd == serverFd){
+
+				// Nuova connessione
+				fds[1 + clientConnessi].fd = accettaRichiesta(serverFd);
+				printf("creato il socket con fd: %i\n", fds[1 + clientConnessi].fd);
+				fds[1 + clientConnessi++].events = POLLIN;
+				printf("Connesso un nuovo client\n");
+
+			}
+			else {
+
+				// Si tratta di un client che fa una richiesta
+				printf("il client con fd: %i\n", fds[i].fd);
+
+				char * buffer = malloc(10);
+				int size = recv(fds[i].fd, buffer, 20, 0);
+
+				// Se il il client ha chiuso il socket (o per altro, tipo erorri)
+				if (size == 0) {
+					close(fds[i].fd);
+					fds[i].fd = -1;
+				}
+
+				printf("ho letto %d byte\n", size);
+				printf("qualcosa da client: %s\n", buffer);
+
+			}
 
 		}
 
-		// for (int i = 0; i < 10; i++){
+		sleep(1);
 
-		// 	printf("%i ", pidFigli[i]);
-
-		// }
-
-		// printf("\n");
+		// gestisciRichiesta(clientFd);
 
 	}
 
@@ -121,9 +158,11 @@ void gestisciRichiesta(int clientFd) {
 	    	gestisciOccupazione(clientFd, messaggio);
 
 	    }
-	    else if (isRichiestaLiberazione(messaggio) == true){
+	    else if (isRichiestaVerificaSegmentoLibero(messaggio) == true){
 
-	    	gestisciRilascio(clientFd, messaggio);
+	    	// gestisciRilascio(clientFd, messaggio);
+	    	gestisciVerificaSegmentoLibero(clientFd, messaggio);
+
 
 	    }
 	    else if(isRichiestaStazione(messaggio) == true){
@@ -173,13 +212,29 @@ void gestisciOccupazione(int clientFd, char* messaggio) {
 
 }
 
+void gestisciVerificaSegmentoLibero(int clientFd, char *messaggio) {
+
+	// Salto la prima lettera
+	messaggio++;
+
+	if (segmenti[strtol(messaggio, NULL, 10)] == false)
+		*messaggio = '1';
+	else 
+		*messaggio = '0';
+
+	*(messaggio++) = '\0';
+
+	send(clientFd, messaggio, 10, 0);
+
+}
+
 bool isRichiestaOccupazione(char *richiesta) {
 
 	return *richiesta == 'O';
 
 }
 
-bool isRichiestaLiberazione(char *richiesta) {
+bool isRichiestaVerificaSegmentoLibero(char *richiesta) {
 
 	return *richiesta == 'L';
 

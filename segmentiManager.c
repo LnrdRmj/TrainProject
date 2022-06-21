@@ -10,6 +10,7 @@ void creaFileSegmento(int);
 void readSegmento(int, char*);
 int getNumeroSegmentoDaStringa(char*);
 bool isLettera(char);
+bool segmentoIsLibero(int);
 bool takeSegmento(int);
 void freeSegmento(int);
 
@@ -18,18 +19,12 @@ void creaFileSegmento(int numSegmento){
   char *pathName;
   asprintf(&pathName, "segmenti/%s%d", PREFISSO, numSegmento);
 
-  // int file = open(buf, O_CREAT|O_RDWR, 0666);
-
   FILE *file = fopen(pathName, "w");
 
   // Inizalizzazione a 0 dei file
-  char str[] = "ciao";
-  // fwrite(str, 1, sizeof(str), file);
   fputc('0', file);
-
-  // printf("Scritto 0 in %s\n", pathName);
-
   fclose(file);
+
   // Setta i permessi corretti del file
   chmod(pathName, 0666);
 
@@ -59,6 +54,17 @@ int getNumeroSegmentoDaStringa(char *segmento) {
 
 }
 
+bool segmentoIsLibero(int segmento) {
+
+	char *fileName;
+
+	asprintf(&fileName, "segmenti/%s%d", PREFISSO, segmento);
+	FILE *fileSegmento = fopen(fileName, "r");
+
+	return fgetc(fileSegmento) == '0';
+
+}
+
 bool takeSegmento(int segmento) {
 
 	char *fileName;
@@ -68,15 +74,15 @@ bool takeSegmento(int segmento) {
 	FILE *fileSegmento = fopen(fileName, "r+");
 	if (fileSegmento == NULL) printf("Fail segmento %i\n", segmento);
 
-	if(fgetc(fileSegmento) == '0') {
-		// Mi riposiziono all'inizio del file
-		fseek(fileSegmento, 0, SEEK_SET);
-		fputc('1', fileSegmento);
+	// if(fgetc(fileSegmento) == '0') {
+	// 	// Mi riposiziono all'inizio del file
+	// 	fseek(fileSegmento, 0, SEEK_SET);
+	fputc('1', fileSegmento);
 
-		fclose(fileSegmento);
+	// 	fclose(fileSegmento);
 
-		return true;
-	}
+	// 	return true;
+	// }
 
 	fclose(fileSegmento);
 	return false;
@@ -87,13 +93,11 @@ bool takeSegmento(int segmento) {
 void freeSegmento(int segmento) {
 
 	char *fileName;
-
 	asprintf(&fileName, "segmenti/%s%d", PREFISSO, segmento);
-
-	FILE *fileSegmento = fopen(fileName, "w");
 	
+	FILE *fileSegmento = fopen(fileName, "w");
 	fputc('0', fileSegmento);
-
+	
 	fclose(fileSegmento);
 
 }

@@ -19,14 +19,17 @@
 
 typedef bool (*politicaSegmento) (int, int);
 typedef void (*politicaRilascio) (int, int);
+typedef bool (*controlloSegmentoLibero) (int, int);
 
 char* getCammino(long, char *);
 void startJourney(char *, long, FILE *, char*);
 bool isStazione(char *);
 // void liberaSegmento(char *);
 int splitString(char *, const char *, char *[]);
-politicaSegmento scegliStrategia(char *);
+// politicaSegmento scegliStrategia(char *);
 politicaRilascio scegliStrategiaRilascio(char *);
+controlloSegmentoLibero stategiaSegmentoIsLibero(char *);
+void takeSegmentoRBC (int, int);
 // int creaConnessioneAServer(const char*);
 
 int main(int argc, char *argv[]) {
@@ -87,8 +90,9 @@ void startJourney(char * cammino, long numeroTreno, FILE *logFile, char* mode){
 	if(strcmp(mode, ETCS2) == 0)
 		serverRBC = creaConnessioneAServer(SERVER_RBC);
 
-	politicaSegmento takeSegmento = scegliStrategia(mode);
+	// politicaSegmento takeSegmento = scegliStrategia(mode);
 	politicaRilascio rilascioSegmento = scegliStrategiaRilascio(mode);
+	controlloSegmentoLibero isSegmentoLibero = stategiaSegmentoIsLibero(mode);
 
 	for (int i = 0; i < numPassi; ++i){
 
@@ -128,7 +132,12 @@ void startJourney(char * cammino, long numeroTreno, FILE *logFile, char* mode){
 			if (!isStazione(previousSegment))
 				rilascioSegmento(getNumeroSegmentoDaStringa(previousSegment), serverRBC);
 
-			if(takeSegmento(numeroSegmento, serverRBC) == true){
+			if(isSegmentoLibero(numeroSegmento, serverRBC) == true){
+
+				takeSegmento(numeroSegmento);
+
+				if(serverRBC != -1)
+					takeSegmentoRBC(numeroSegmento, serverRBC);
 
 				if (DEBUG)
 				printf("Il treno %lu ha occupato il segmento %i\n",numeroTreno, numeroSegmento);
@@ -139,7 +148,7 @@ void startJourney(char * cammino, long numeroTreno, FILE *logFile, char* mode){
 				// quindi diminuisco di uno l'indice
 				--i;
 				if (true)
-				printf("Il treno %lu si e' bloccato sul segmento %s bloccato\n", numeroTreno, segmento);
+					printf("Il treno %lu si e' bloccato sul segmento %s bloccato\n", numeroTreno, segmento);
 			}
 
 		}
@@ -152,57 +161,102 @@ void startJourney(char * cammino, long numeroTreno, FILE *logFile, char* mode){
 
 }
 
-bool politicaETCS1(int numeroSegmento, int fantoccio) {
+bool segmentoIsLiberoETCS1(int numeroSegmento, int fantoccio) {
 
-	return takeSegmento(numeroSegmento);
+	return segmentoIsLibero(numeroSegmento);
 
 }
 
-bool politicaETCS2(int numeroSegmento, int serverRBC) {
+bool segmentoIsLiberoETCS2(int numeroSegmento, int serverRBC) {
 
 	// printf("Sto prendendo un segmento\n");
 	char *message = malloc(10);
-	sprintf(message, "O%i", numeroSegmento); //O per Occupa
-	printf("messagio occupazione %s\n", message);
+	sprintf(message, "L%i", numeroSegmento); //L per Libero
 	send(serverRBC, message, 10, 0);
 
 	char *response = malloc(10);
-	printf("aspett response occupazione\n");
     recv(serverRBC, response, 10, 0);
-    printf("Response da RBC %s\n", response);
 
 	return *response == '1';
-	return true;
 
 }
 
-politicaSegmento scegliStrategia(char *mode) {
+controlloSegmentoLibero stategiaSegmentoIsLibero(char *mode){
 
 	if (strcmp(mode, "ETCS1") == 0) {
-		return politicaETCS1;
+		return segmentoIsLiberoETCS1;
 	}
 	else if(strcmp(mode, "ETCS2") == 0){
-		return politicaETCS2;
+		return segmentoIsLiberoETCS2;
 	}
+
+}
+
+// bool politicaETCS1(int numeroSegmento, int fantoccio) {
+
+// 	return takeSegmento(numeroSegmento);
+
+// }
+
+// bool politicaETCS2(int numeroSegmento, int serverRBC) {
+
+// 	// printf("Sto prendendo un segmento\n");
+// 	char *message = malloc(10);
+// 	sprintf(message, "O%i", numeroSegmento); //O per Occupa
+// 	printf("messagio occupazione %s\n", message);
+// 	send(serverRBC, message, 10, 0);
+
+// 	char *response = malloc(10);
+// 	printf("aspett response occupazione\n");
+//     recv(serverRBC, response, 10, 0);
+//     printf("Response da RBC %s\n", response);
+
+// 	return *response == '1';
+// 	return true;
+
+// }
+
+// politicaSegmento scegliStrategia(char *mode) {
+
+// 	if (strcmp(mode, "ETCS1") == 0) {
+// 		return politicaETCS1;
+// 	}
+// 	else if(strcmp(mode, "ETCS2") == 0){
+// 		return politicaETCS2;
+// 	}
+
+// }
+
+void takeSegmentoRBC (int numeroSegmento, int serverRBC) {
+
+	printf("passa\n");
+	char *message = malloc(10);
+	sprintf(message, "O%i", numeroSegmento); //O per Occupa
+	send(serverRBC, message, 10, 0);
 
 }
 
 void politicaRilascioETCS1(int segmento, int fantoccio) {
-
+	
 	freeSegmento(segmento);
+
+	char *fileName;
+
+	asprintf(&fileName, "segmenti/%s%d", "MA", segmento);
+	//printf("%s\n", fileName);
+	FILE *fileSegmento = fopen(fileName, "r");
 
 }
 
 void politicaRilascioETCS2(int segmento, int serverRBC) {
 
+	freeSegmento(segmento);
+
 	char *message = malloc(10); //L per "Libera"
 	sprintf(message, "L%i", segmento);
 
-	printf("messagio rilascio %s\n", message);	
 	send(serverRBC, message, 10, 0);
-	// printf("mandato il rilascio\n");
 
-	return;
 }
 
 politicaRilascio scegliStrategiaRilascio(char *mode) {
