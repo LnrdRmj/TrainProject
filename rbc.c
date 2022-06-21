@@ -16,7 +16,7 @@
 #define NUMERO_STAZIONI 8
 #define SERVER_REGISTRO "serveRegistro"
 
-void gestisciRichiesta(int);
+void gestisciRichiesta(int, char*);
 // void gestisciRilascio (int, char*);
 void gestisciOccupazione(int, char*);
 void gestisciVerificaSegmentoLibero(int, char *);
@@ -74,7 +74,7 @@ int main(int argc, char const *argv[])
 
 				// Nuova connessione
 				fds[1 + clientConnessi].fd = accettaRichiesta(serverFd);
-				printf("creato il socket con fd: %i\n", fds[1 + clientConnessi].fd);
+				// printf("creato il socket con fd: %i\n", fds[1 + clientConnessi].fd);
 				fds[1 + clientConnessi++].events = POLLIN;
 				printf("Connesso un nuovo client\n");
 
@@ -82,8 +82,6 @@ int main(int argc, char const *argv[])
 			else {
 
 				// Si tratta di un client che fa una richiesta
-				printf("il client con fd: %i\n", fds[i].fd);
-
 				char * buffer = malloc(10);
 				int size = recv(fds[i].fd, buffer, 20, 0);
 
@@ -93,8 +91,9 @@ int main(int argc, char const *argv[])
 					fds[i].fd = -1;
 				}
 
-				printf("ho letto %d byte\n", size);
 				printf("qualcosa da client: %s\n", buffer);
+
+				gestisciRichiesta(fds[i].fd, buffer);
 
 			}
 
@@ -143,35 +142,27 @@ char* getPercorsi(int registroFd, char * mappa){
 
 }
 
-void gestisciRichiesta(int clientFd) {
+void gestisciRichiesta(int clientFd, char *messaggio) {
 
-	while(1 && clientFd != -1) {
+    printf("RBC - Ho letto %s\n", messaggio);
 
-		char *messaggio = malloc(10);
-		printf("Aspetto una nuoca richiesta\n");
-	    recv(clientFd, messaggio, 10, 0);
+    if (isRichiestaOccupazione(messaggio) == true){
 
-	    printf("RBC - Ho letto %s\n", messaggio);
+    	gestisciOccupazione(clientFd, messaggio);
 
-	    if (isRichiestaOccupazione(messaggio) == true){
+    }
+    else if (isRichiestaVerificaSegmentoLibero(messaggio) == true){
 
-	    	gestisciOccupazione(clientFd, messaggio);
-
-	    }
-	    else if (isRichiestaVerificaSegmentoLibero(messaggio) == true){
-
-	    	// gestisciRilascio(clientFd, messaggio);
-	    	gestisciVerificaSegmentoLibero(clientFd, messaggio);
+    	// gestisciRilascio(clientFd, messaggio);
+    	gestisciVerificaSegmentoLibero(clientFd, messaggio);
 
 
-	    }
-	    else if(isRichiestaStazione(messaggio) == true){
+    }
+    else if(isRichiestaStazione(messaggio) == true){
 
-	    	// Acetta sempre la richiesta
+    	// Acetta sempre la richiesta
 
-	    }
-
-	}
+    }
 
 }
 
