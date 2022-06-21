@@ -38,17 +38,19 @@ int main(int argc, char const *argv[])
 
 	char *mappa = argv[1];
 	
-	// int registroFd = creaConnessioneAServer(SERVER_REGISTRO);
+	int registroFd = creaConnessioneAServer(SERVER_REGISTRO);
 	
-	// char *percorsi = getPercorsi(registroFd, mappa);
+	char *percorsi = getPercorsi(registroFd, mappa);
+	printf("percorsi %s\n", percorsi);
 
 	int serverFd = createServer(SERVER_RBC_NAME, SERVER_QUEUE_LENGTH);
-	// ioctl(serverFd, );
 
 	int clientConnessi = 0;
 	int nfds = 3;
-	struct pollfd *fds = malloc(nfds * sizeof(struct pollfd));
-	
+
+	struct pollfd *fds = calloc(nfds, sizeof(struct pollfd));
+	printf("arriva\n");
+
 	fds[0].fd = serverFd;
 	fds[0].events = POLLIN;
 
@@ -128,15 +130,15 @@ void setup() {
 char* getPercorsi(int registroFd, char * mappa){
 
 
-	char * message = malloc(10);
+	char *message = malloc(1024);
 
 	sprintf(message, "A%c", mappa[5]);
 	printf("%s\n", message);
 
-	send(registroFd, message, 10, 0);
+	send(registroFd, message, 1024, 0);
 
 	recv(registroFd, message, 1024, 0);
-	printf("%s\n", message);
+	// printf("%s\n", message);
 
 	return message;
 
