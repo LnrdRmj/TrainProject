@@ -196,8 +196,7 @@ controlloSegmentoLibero stategiaSegmentoIsLibero(char *mode){
 }
 
 void takeSegmentoRBC (int numeroSegmento, int serverRBC) {
-
-	printf("passa\n");
+	
 	char *message = malloc(10);
 	sprintf(message, "O%i", numeroSegmento); //O per Occupa
 	send(serverRBC, message, 10, 0);

@@ -1,5 +1,6 @@
 main: main.o segmentiManager.o treno registro rbc
 	gcc main.o segmentiManager.o -o main
+	rm *.o
 
 main.o: main.c segmentiManager.h
 	gcc main.c -c
@@ -39,3 +40,9 @@ socketHelper: socketHelper.c
 
 socketHelper.o: socketHelper.c socketHelper.h
 	gcc socketHelper.c -c
+
+all: main
+	mv main lib/
+
+clean:
+	rm *.o

@@ -66,7 +66,6 @@ int main() {
 
 void gestisciRBC(int clientFd, char buffer[1024]) {
 
-    printf("arrivato rbc\n");
     sendMappaIntera(clientFd, buffer[1]);
 
 }
@@ -95,7 +94,6 @@ void sendMappaIntera(int clientFd, char numeroMappa) {
   }
 
   send(clientFd, mappaIntera, 1024, 0);
-  printf("risultato: %s\n", mappaIntera);
 
 }
 

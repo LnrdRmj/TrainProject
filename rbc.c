@@ -42,15 +42,15 @@ int main(int argc, char const *argv[])
 	int registroFd = creaConnessioneAServer(SERVER_REGISTRO);
 	
 	char *percorsi = getPercorsi(registroFd, mappa);
-	printf("percorsi %s\n", percorsi);
+	// printf("percorsi %s\n", percorsi);
 
 	int serverFd = createServer(SERVER_RBC_NAME, SERVER_QUEUE_LENGTH);
 
 	int clientConnessi = 0;
-	int nfds = 3;
+	int nfds = 10;
 
 	struct pollfd *fds = calloc(nfds, sizeof(struct pollfd));
-	printf("arriva\n");
+	// printf("arriva\n");
 
 	fds[0].fd = serverFd;
 	fds[0].events = POLLIN;
@@ -94,15 +94,15 @@ int main(int argc, char const *argv[])
 					continue;
 				}
 
-				printf("qualcosa da client: %s\n", buffer);
+				// printf("qualcosa da client: %s\n", buffer);
 
 				gestisciRichiesta(fds[i].fd, buffer);
 
-				for (int i = 0; i < NUMERO_TRATTE; ++i)
-				{
-					printf("%i ", segmenti[i]);
-				}
-				printf("\n");
+				// for (int i = 0; i < NUMERO_TRATTE; ++i)
+				// {
+				// 	printf("%i ", segmenti[i]);
+				// }
+				// printf("\n");
 
 			}
 
@@ -117,7 +117,7 @@ int main(int argc, char const *argv[])
 }
 
 void setup() {
-
+ 
 	// Inizializzo lo stato dei segmenti
 	for (int i = 0; i < NUMERO_TRATTE; ++i){
 		segmenti[i] = false;
@@ -188,29 +188,6 @@ void gestisciOccupazione(int clientFd, char* messaggio) {
 	messaggio++;
 	segmenti[strtol(messaggio, NULL, 10) - 1] = true;
 
-	// char *response = malloc(10);
-
-	// // Salto la prima lettera
-	// messaggio++;
-
-	// // Se il segmento e' libero allora lo occupo
-	// if (segmenti[strtol(messaggio, NULL, 10)] == false) {
-
-	// 	printf("segmento %lu preso\n", strtol(messaggio, NULL, 10));
-	// 	*response = '1';
-
-	// }
-	// // Altrimenti era gia occupato
-	// else {
-
-	// 	printf("segmento %lu non preso\n", strtol(messaggio, NULL, 10));
-	// 	*response = '0';
-
-	// }
-
-	// printf("server - Mando %s\n", response);
-	// send(clientFd, response, 10, 0);
-
 }
 
 void gestisciVerificaSegmentoLibero(int clientFd, char *messaggio) {
@@ -220,10 +197,10 @@ void gestisciVerificaSegmentoLibero(int clientFd, char *messaggio) {
 
 	if (segmenti[strtol(messaggio, NULL, 10)] == false)
 		*messaggio = '1';
-	else 
+	else {
+		printf("bloccato un treno\n");
 		*messaggio = '0';
-
-	// *(++messaggio) = '\0';
+	}
 
 	send(clientFd, messaggio, 10, 0);
 

@@ -24,10 +24,10 @@ int main(int argc, char *argv[]) {
 
   if (strcmp(argv[1], "ETCS2") == 0 && strcmp(argv[2], "RBC") == 0) {
 
-
     execl("rbc", "rbc", argv[3], NULL);
 
     return 0;
+    
   }
 
   startRegistro();
@@ -53,7 +53,7 @@ void startTreni(char *mode,char mappa[10]) {
 
   // printf("I treni usano la mappa %s\n", mappa);
   //NUMERO_PROCESSI_TRENI
-  for (int i = 0; i < 1; i++) {
+  for (int i = 0; i < NUMERO_PROCESSI_TRENI; i++) {
 
     // Fai partire i proessi treni
     int pid = fork();
