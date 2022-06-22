@@ -8,88 +8,91 @@
 
 #include "segmentiManager.h"
 #include "log.h"
+#include "socketHelper.h"
 
-#define SERVER_NAME "serveRegistro"
+#define SERVER_REGISTRO "serveRegistro"
+#define SERVER_RBC "serverRBC"
+#define ETCS1 "ETCS1"
+#define ETCS2 "ETCS2"
 #define PREFISSO_FILE_SEGMENTO "MA"
+#define DEBUG true
+
+typedef bool (*politicaSegmento) (int, int);
+typedef void (*politicaRilascio) (int, int);
+typedef bool (*controlloSegmentoLibero) (int, int);
 
 char* getCammino(long, char *);
-void startJourney(char *, long, FILE *);
+void startJourney(char *, long, FILE *, char*);
 bool isStazione(char *);
-void liberaSegmento(char *);
+// void liberaSegmento(char *);
 int splitString(char *, const char *, char *[]);
+// politicaSegmento scegliStrategia(char *);
+politicaRilascio scegliStrategiaRilascio(char *);
+controlloSegmentoLibero stategiaSegmentoIsLibero(char *);
+void takeSegmentoRBC (int, int);
+// int creaConnessioneAServer(const char*);
 
 int main(int argc, char *argv[]) {
 
-  // Il primo argomento è il numero del treno
-  char *numTreno = argv[1];
-  char *mappa = argv[2];
+	// Il primo argomento è il numero del treno
+	char *numTreno = argv[1];
+	char *mode = argv[2];
+	char *mappa = argv[3];
 
-  // Converto la stringa in long
-  char *tmp;
-  long lnumeroTreno = strtol(numTreno, &tmp, 10);
+	// Converto la stringa in long
+	char *tmp;
+	long lnumeroTreno = strtol(numTreno, &tmp, 10);
 
-  FILE *logFile = creaFileLogTreno(lnumeroTreno, logFile);
-  printf("%p\n", logFile);
+	FILE *logFile = creaFileLogTreno(lnumeroTreno, logFile);
 
-  char *cammino = getCammino(lnumeroTreno, mappa);
+	char *cammino = getCammino(lnumeroTreno, mappa);
 
-  printf("Cammino %s\n", cammino);
+	// printf("Cammino %s\n", cammino);
 
-  startJourney(cammino, lnumeroTreno, logFile);
+	startJourney(cammino, lnumeroTreno, logFile, mode);
 
-  return 0;
+	return 0;
 
 }
 
 char* getCammino(long lnumeroTreno, char *mappa){
 
-  struct sockaddr_un registro;
-  registro.sun_family = AF_UNIX;
-  strcpy(registro.sun_path, SERVER_NAME);
+	int serverFd = creaConnessioneAServer(SERVER_REGISTRO);
 
-  int serverFd = socket(AF_UNIX, SOCK_STREAM, 0);
+	char *buffer;
+	asprintf(&buffer, "%i", lnumeroTreno); 
 
-  int result;
-  do{
-    int serverLen = sizeof(registro);
-    result = connect(serverFd, (struct sockaddr*) &registro, serverLen);
-    if(result == -1) {
-    	sleep(1);
-    }
-  }while(result == -1);
+	char *dataForServer = strcat(buffer, mappa);
+	write(serverFd, dataForServer, strlen(dataForServer) + 1);
 
-  // char *tmp;
-  // long lnumeroTreno = strtol(numTreno, &tmp, 10);
+	char *cammino = malloc(100);
+	read(serverFd, cammino, 100);
+	if(DEBUG) printf("Il cammino del treno %lu e': %s\n", lnumeroTreno, cammino);
 
-  char *buffer;
-  asprintf(&buffer, "%i", lnumeroTreno); 
+	close(serverFd);
 
-  char *dataForServer = strcat(buffer, mappa);
-  write(serverFd, dataForServer, strlen(dataForServer) + 1);
-
-  char *cammino = malloc(100);
-  read(serverFd, cammino, 100);
-  // printf("Il cammino del treno %s e': %s\n", numTreno, cammino);
-
-  close(serverFd);
-
-  return cammino;
+	return cammino;
 
 }
 
-void startJourney(char * cammino, long numeroTreno, FILE *logFile){
+void startJourney(char * cammino, long numeroTreno, FILE *logFile, char* mode){
 
 	// Questo array conterra' il percorso sottoforma di array
 	char *passiCammino[10];
 
 	int numPassi = splitString(cammino, ";", passiCammino);
-	printf("Il cammino ha %i passi\n", numPassi);
-	// char *segmento = strtok(cammino, ";");
-	// // Salto la prima stazione tanto non mi serve
-	// segmento = strtok(NULL, ";");
 	char *previousSegment = NULL;
 
-	printf("Il treno %lu e' partito \n", numeroTreno);
+	if (DEBUG)
+		printf("Il treno %lu e' partito \n", numeroTreno);
+
+	int serverRBC = -1;
+	if(strcmp(mode, ETCS2) == 0)
+		serverRBC = creaConnessioneAServer(SERVER_RBC);
+
+	// politicaSegmento takeSegmento = scegliStrategia(mode);
+	politicaRilascio rilascioSegmento = scegliStrategiaRilascio(mode);
+	controlloSegmentoLibero isSegmentoLibero = stategiaSegmentoIsLibero(mode);
 
 	for (int i = 0; i < numPassi; ++i){
 
@@ -110,8 +113,11 @@ void startJourney(char * cammino, long numeroTreno, FILE *logFile){
 				logFineViaggio(segmento, logFile);	
 			}
 
-			printf("Stazione %s\n", segmento);
-			liberaSegmento(previousSegment);
+			if(DEBUG)
+				printf("Stazione %s\n", segmento);
+
+			if (previousSegment != NULL)
+				rilascioSegmento(getNumeroSegmentoDaStringa(previousSegment), serverRBC);
 
 		}
 		// Allora e' un segmento
@@ -121,47 +127,115 @@ void startJourney(char * cammino, long numeroTreno, FILE *logFile){
 
 			int numeroSegmento = getNumeroSegmentoDaStringa(segmento);
 			// printf("%s: il numero del segmetno e: %i\n", segmento, numeroSegmento);
-			char *segmentoOccupato = malloc(1);
-			readSegmento(numeroSegmento, segmentoOccupato);
 
-			// Libero solo i segmenti
+			// Libero se e' un segmento
 			if (!isStazione(previousSegment))
-				liberaSegmento(previousSegment);
+				rilascioSegmento(getNumeroSegmentoDaStringa(previousSegment), serverRBC);
 
-			if(takeSegmento(numeroSegmento) == true){
+			if(isSegmentoLibero(numeroSegmento, serverRBC) == true){
 
+				takeSegmento(numeroSegmento);
+
+				if(serverRBC != -1)
+					takeSegmentoRBC(numeroSegmento, serverRBC);
+
+				if (DEBUG)
 				printf("Il treno %lu ha occupato il segmento %i\n",numeroTreno, numeroSegmento);
-				// if (previousSegment != NULL) printf("Il segmento precedente e'%s\n", previousSegment);
 
 			}
 			else {
-				printf("Il treno %lu si e' bloccato sul segmento %s bloccato\n", numeroTreno, segmento);
+				// Se si blocca allora deve rimanere sullo stesso segmento
+				// quindi diminuisco di uno l'indice
+				--i;
+				if (true)
+					printf("Il treno %lu si e' bloccato sul segmento %s bloccato\n", numeroTreno, segmento);
 			}
-			// printf("%c\n", *segmentoOccupato);
 
 		}
 		sleep(1);
 
 	}
 
+	close(serverRBC);
 	printf("Il treno %lu ha finito\n", numeroTreno);
 
 }
 
-void liberaSegmento(char *segmento){
+bool segmentoIsLiberoETCS1(int numeroSegmento, int fantoccio) {
 
-	// Se il segmento passato e valido allora li libero
-	if (segmento != NULL) {
-		int numeroSegmento = getNumeroSegmentoDaStringa(segmento);
-		freeSegmento(numeroSegmento);
-		printf("liberato %i\n", numeroSegmento);
-		// printf("Ho liberato il segmento %s\n", segmento);
+	return segmentoIsLibero(numeroSegmento);
+
+}
+
+bool segmentoIsLiberoETCS2(int numeroSegmento, int serverRBC) {
+
+	// printf("Sto prendendo un segmento\n");
+	char *message = malloc(10);
+	sprintf(message, "L%i", numeroSegmento); //L per Libero
+	send(serverRBC, message, 10, 0);
+	printf("libero? %s\n", message);
+
+	char *response = malloc(10);
+    recv(serverRBC, response, 10, 0);
+    printf("Risposta%s\n", response);
+
+	return *response == '1';
+
+}
+
+controlloSegmentoLibero stategiaSegmentoIsLibero(char *mode){
+
+	if (strcmp(mode, "ETCS1") == 0) {
+		return segmentoIsLiberoETCS1;
+	}
+	else if(strcmp(mode, "ETCS2") == 0){
+		printf("arriva\n");
+		return segmentoIsLiberoETCS2;
 	}
 
 }
+
+void takeSegmentoRBC (int numeroSegmento, int serverRBC) {
+
+	printf("passa\n");
+	char *message = malloc(10);
+	sprintf(message, "O%i", numeroSegmento); //O per Occupa
+	send(serverRBC, message, 10, 0);
+
+}
+
+void politicaRilascioETCS1(int segmento, int fantoccio) {
+	
+	freeSegmento(segmento);
+
+}
+
+void politicaRilascioETCS2(int segmento, int serverRBC) {
+
+	freeSegmento(segmento);
+
+	char *message = malloc(10);
+	sprintf(message, "R%i", segmento); //R per "Rilascio"
+	printf("rilascio segmento: %s\n", message);
+
+	send(serverRBC, message, 10, 0);
+
+}
+
+politicaRilascio scegliStrategiaRilascio(char *mode) {
+
+	if (strcmp(mode, "ETCS1") == 0) {
+		return politicaRilascioETCS1;
+	}
+	else if(strcmp(mode, "ETCS2") == 0){
+		return politicaRilascioETCS2;
+	}
+
+}
+
 //Helpers
 
-// Divide una stringa
+// Divide una stringa dato un delimitatore
 int splitString(char *toSplit, const char *delimiter, char *tokens[10]){
 
 	int i = 0;

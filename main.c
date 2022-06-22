@@ -14,15 +14,25 @@
 void creaFiles(void);
 void inizializzaProcessiTreni(void);
 void startRegistro(void);
-void startTreni(char[10]);
+void startTreni(char *, char[10]);
 
 int main(int argc, char *argv[]) {
 
+  // TODO: controllare gli argomenti
+
   creaFiles();
+
+  if (strcmp(argv[1], "ETCS2") == 0 && strcmp(argv[2], "RBC") == 0) {
+
+
+    execl("rbc", "rbc", argv[3], NULL);
+
+    return 0;
+  }
 
   startRegistro();
 
-  startTreni(argv[1]);
+  startTreni(argv[1], argv[2]);
 
   return 0;
 
@@ -39,20 +49,20 @@ void startRegistro() {
 
 }
 
-void startTreni(char mappa[10]) {
+void startTreni(char *mode,char mappa[10]) {
 
   // printf("I treni usano la mappa %s\n", mappa);
   //NUMERO_PROCESSI_TRENI
-  for (int i = 0; i < NUMERO_PROCESSI_TRENI; i++) {
+  for (int i = 0; i < 1; i++) {
 
     // Fai partire i proessi treni
     int pid = fork();
     if (pid == 0){
 
-      char *buffer;
-      asprintf(&buffer, "%i", i);
+      char *numeroTreno;
+      asprintf(&numeroTreno, "%i", i);
 
-      execl("treno", "treno", buffer, mappa, NULL);
+      execl("treno", "treno", numeroTreno, mode, mappa, NULL);
 
     }
 
