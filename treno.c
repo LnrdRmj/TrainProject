@@ -173,9 +173,11 @@ bool segmentoIsLiberoETCS2(int numeroSegmento, int serverRBC) {
 	char *message = malloc(10);
 	sprintf(message, "L%i", numeroSegmento); //L per Libero
 	send(serverRBC, message, 10, 0);
+	printf("libero? %s\n", message);
 
 	char *response = malloc(10);
     recv(serverRBC, response, 10, 0);
+    printf("Risposta%s\n", response);
 
 	return *response == '1';
 
@@ -187,45 +189,11 @@ controlloSegmentoLibero stategiaSegmentoIsLibero(char *mode){
 		return segmentoIsLiberoETCS1;
 	}
 	else if(strcmp(mode, "ETCS2") == 0){
+		printf("arriva\n");
 		return segmentoIsLiberoETCS2;
 	}
 
 }
-
-// bool politicaETCS1(int numeroSegmento, int fantoccio) {
-
-// 	return takeSegmento(numeroSegmento);
-
-// }
-
-// bool politicaETCS2(int numeroSegmento, int serverRBC) {
-
-// 	// printf("Sto prendendo un segmento\n");
-// 	char *message = malloc(10);
-// 	sprintf(message, "O%i", numeroSegmento); //O per Occupa
-// 	printf("messagio occupazione %s\n", message);
-// 	send(serverRBC, message, 10, 0);
-
-// 	char *response = malloc(10);
-// 	printf("aspett response occupazione\n");
-//     recv(serverRBC, response, 10, 0);
-//     printf("Response da RBC %s\n", response);
-
-// 	return *response == '1';
-// 	return true;
-
-// }
-
-// politicaSegmento scegliStrategia(char *mode) {
-
-// 	if (strcmp(mode, "ETCS1") == 0) {
-// 		return politicaETCS1;
-// 	}
-// 	else if(strcmp(mode, "ETCS2") == 0){
-// 		return politicaETCS2;
-// 	}
-
-// }
 
 void takeSegmentoRBC (int numeroSegmento, int serverRBC) {
 
@@ -240,20 +208,15 @@ void politicaRilascioETCS1(int segmento, int fantoccio) {
 	
 	freeSegmento(segmento);
 
-	char *fileName;
-
-	asprintf(&fileName, "segmenti/%s%d", "MA", segmento);
-	//printf("%s\n", fileName);
-	FILE *fileSegmento = fopen(fileName, "r");
-
 }
 
 void politicaRilascioETCS2(int segmento, int serverRBC) {
 
 	freeSegmento(segmento);
 
-	char *message = malloc(10); //L per "Libera"
-	sprintf(message, "L%i", segmento);
+	char *message = malloc(10);
+	sprintf(message, "R%i", segmento); //R per "Rilascio"
+	printf("rilascio segmento: %s\n", message);
 
 	send(serverRBC, message, 10, 0);
 

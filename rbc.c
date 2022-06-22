@@ -17,12 +17,13 @@
 #define SERVER_REGISTRO "serveRegistro"
 
 void gestisciRichiesta(int, char*);
-// void gestisciRilascio (int, char*);
 void gestisciOccupazione(int, char*);
 void gestisciVerificaSegmentoLibero(int, char *);
+void gestisciRilascio(int, char *);
 bool isRichiestaOccupazione(char *);
 bool isRichiestaVerificaSegmentoLibero(char *);
 bool isRichiestaStazione(char *);
+bool isRichiestaRilascio(char *);
 char* getPercorsi(int, char *);
 void setup();
 
@@ -64,7 +65,6 @@ int main(int argc, char const *argv[])
 
 	while(1) {
 
-		printf("Aspetto connessioni o richeista dai treni\n");
 		poll(fds, nfds, -1);
 
 		for (int i = 0; i < nfds; ++i)
@@ -85,25 +85,28 @@ int main(int argc, char const *argv[])
 
 				// Si tratta di un client che fa una richiesta
 				char * buffer = malloc(10);
-				int size = recv(fds[i].fd, buffer, 20, 0);
+				int size = recv(fds[i].fd, buffer, 10, 0);
 
 				// Se il il client ha chiuso il socket (o per altro, tipo erorri)
 				if (size == 0) {
 					close(fds[i].fd);
 					fds[i].fd = -1;
+					continue;
 				}
 
 				printf("qualcosa da client: %s\n", buffer);
 
 				gestisciRichiesta(fds[i].fd, buffer);
 
+				for (int i = 0; i < NUMERO_TRATTE; ++i)
+				{
+					printf("%i ", segmenti[i]);
+				}
+				printf("\n");
+
 			}
 
 		}
-
-		sleep(1);
-
-		// gestisciRichiesta(clientFd);
 
 	}
 
@@ -129,15 +132,14 @@ void setup() {
 
 char* getPercorsi(int registroFd, char * mappa){
 
-
-	char *message = malloc(1024);
+	char *message = malloc(10);
 
 	sprintf(message, "A%c", mappa[5]);
 	printf("%s\n", message);
 
-	send(registroFd, message, 1024, 0);
+	send(registroFd, message, 10, 0);
 
-	recv(registroFd, message, 1024, 0);
+	recv(registroFd, message, 10, 0);
 	// printf("%s\n", message);
 
 	return message;
@@ -145,8 +147,6 @@ char* getPercorsi(int registroFd, char * mappa){
 }
 
 void gestisciRichiesta(int clientFd, char *messaggio) {
-
-    printf("RBC - Ho letto %s\n", messaggio);
 
     if (isRichiestaOccupazione(messaggio) == true){
 
@@ -165,6 +165,11 @@ void gestisciRichiesta(int clientFd, char *messaggio) {
     	// Acetta sempre la richiesta
 
     }
+    else if(isRichiestaRilascio(messaggio) == true) {
+
+		gestisciRilascio(clientFd, messaggio);
+
+    }
 
 }
 
@@ -173,35 +178,38 @@ void gestisciRilascio (int clientFd, char* messaggio){
 	// Salto la prima lettera
 	messaggio++;
 	//libero il segmento
-	segmenti[strtol(messaggio, NULL, 10)] = false;
+	segmenti[strtol(messaggio, NULL, 10) - 1] = false;
 	printf("segmento liberato %lu\n", strtol(messaggio, NULL, 10));
 
 }
 
 void gestisciOccupazione(int clientFd, char* messaggio) {
 
-	char *response = malloc(10);
-
-	// Salto la prima lettera
 	messaggio++;
+	segmenti[strtol(messaggio, NULL, 10) - 1] = true;
 
-	// Se il segmento e' libero allora lo occupo
-	if (segmenti[strtol(messaggio, NULL, 10)] == false) {
+	// char *response = malloc(10);
 
-		printf("segmento %lu preso\n", strtol(messaggio, NULL, 10));
-		*response = '1';
+	// // Salto la prima lettera
+	// messaggio++;
 
-	}
-	// Altrimenti era gia occupato
-	else {
+	// // Se il segmento e' libero allora lo occupo
+	// if (segmenti[strtol(messaggio, NULL, 10)] == false) {
 
-		printf("segmento %lu non preso\n", strtol(messaggio, NULL, 10));
-		*response = '0';
+	// 	printf("segmento %lu preso\n", strtol(messaggio, NULL, 10));
+	// 	*response = '1';
 
-	}
+	// }
+	// // Altrimenti era gia occupato
+	// else {
 
-	printf("server - Mando %s\n", response);
-	send(clientFd, response, 10, 0);
+	// 	printf("segmento %lu non preso\n", strtol(messaggio, NULL, 10));
+	// 	*response = '0';
+
+	// }
+
+	// printf("server - Mando %s\n", response);
+	// send(clientFd, response, 10, 0);
 
 }
 
@@ -215,7 +223,7 @@ void gestisciVerificaSegmentoLibero(int clientFd, char *messaggio) {
 	else 
 		*messaggio = '0';
 
-	*(messaggio++) = '\0';
+	// *(++messaggio) = '\0';
 
 	send(clientFd, messaggio, 10, 0);
 
@@ -239,17 +247,8 @@ bool isRichiestaStazione(char *richiesta) {
 
 }
 
-// char* getCamminoTreno(int registro, int numeroTreno, char *mappa){
+bool isRichiestaRilascio(char *richiesta) {
 
-// 	char *buffer;
-// 	sprintf(buffer, "%i", numeroTreno); 
+	return *richiesta == 'R';
 
-// 	char *dataForServer = strcat(buffer, mappa);
-// 	write(registro, dataForServer, strlen(dataForServer) + 1);
-
-// 	char *cammino = malloc(100);
-// 	read(registro, cammino, 100);
-
-// 	return cammino;
-
-// }
+}
