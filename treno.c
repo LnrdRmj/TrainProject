@@ -30,6 +30,7 @@ int splitString(char *, const char *, char *[]);
 politicaRilascio scegliStrategiaRilascio(char *);
 controlloSegmentoLibero stategiaSegmentoIsLibero(char *);
 void takeSegmentoRBC (int, int);
+bool permessoStazione(int, char *);
 // int creaConnessioneAServer(const char*);
 
 int main(int argc, char *argv[]) {
@@ -106,6 +107,12 @@ void startJourney(char * cammino, long numeroTreno, FILE *logFile, char* mode){
 
 		if(isStazione(segmento)){
 
+			if (serverRBC != -1) {
+
+				permessoStazione(serverRBC, segmento);
+
+			}
+
 			if (i == 0) {
 				logInizioViaggio(segmento, logFile);
 			}
@@ -161,6 +168,23 @@ void startJourney(char * cammino, long numeroTreno, FILE *logFile, char* mode){
 
 }
 
+bool permessoStazione(int serverRBC, char *stazione) {
+
+	printf("Richiedo permesso stazione\n");
+
+	char *message = malloc(10);
+	// Stazione sara una stringa del tipo SX dove X e' un numero tra 1 e 8 (compresi)
+	// A me interessa solo il numero quindi
+	sprintf(message, "S%i", atoi(++message)); //S per Stazione
+	send(serverRBC, message, 10, 0);
+
+	recv(serverRBC, message, 10, 0);
+	printf("risposta %s\n", message);
+
+	return *message == '1';
+
+}
+
 bool segmentoIsLiberoETCS1(int numeroSegmento, int fantoccio) {
 
 	return segmentoIsLibero(numeroSegmento);
@@ -196,7 +220,7 @@ controlloSegmentoLibero stategiaSegmentoIsLibero(char *mode){
 }
 
 void takeSegmentoRBC (int numeroSegmento, int serverRBC) {
-	
+
 	char *message = malloc(10);
 	sprintf(message, "O%i", numeroSegmento); //O per Occupa
 	send(serverRBC, message, 10, 0);

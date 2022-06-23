@@ -19,6 +19,7 @@
 void gestisciRichiesta(int, char*);
 void gestisciOccupazione(int, char*);
 void gestisciVerificaSegmentoLibero(int, char *);
+void gestisciStazione(int, char*);
 void gestisciRilascio(int, char *);
 bool isRichiestaOccupazione(char *);
 bool isRichiestaVerificaSegmentoLibero(char *);
@@ -50,7 +51,6 @@ int main(int argc, char const *argv[])
 	int nfds = 10;
 
 	struct pollfd *fds = calloc(nfds, sizeof(struct pollfd));
-	// printf("arriva\n");
 
 	fds[0].fd = serverFd;
 	fds[0].events = POLLIN;
@@ -94,15 +94,7 @@ int main(int argc, char const *argv[])
 					continue;
 				}
 
-				// printf("qualcosa da client: %s\n", buffer);
-
 				gestisciRichiesta(fds[i].fd, buffer);
-
-				// for (int i = 0; i < NUMERO_TRATTE; ++i)
-				// {
-				// 	printf("%i ", segmenti[i]);
-				// }
-				// printf("\n");
 
 			}
 
@@ -134,19 +126,22 @@ char* getPercorsi(int registroFd, char * mappa){
 
 	char *message = malloc(10);
 
+	// Il messaggio puo' essere A1 o A2 (sarebbe All1, per richiedere tutta la mappa1 o 
+	// All2 per richiedere tutta la mappa1). Per conoscere il numero della mappa mi basta prendere
+	// il sesto carattere della stringa MAPPAX.
 	sprintf(message, "A%c", mappa[5]);
-	printf("%s\n", message);
 
 	send(registroFd, message, 10, 0);
 
 	recv(registroFd, message, 10, 0);
-	// printf("%s\n", message);
 
 	return message;
 
 }
 
 void gestisciRichiesta(int clientFd, char *messaggio) {
+
+	printf("letto: %s\n", messaggio);
 
     if (isRichiestaOccupazione(messaggio) == true){
 
@@ -163,6 +158,7 @@ void gestisciRichiesta(int clientFd, char *messaggio) {
     else if(isRichiestaStazione(messaggio) == true){
 
     	// Acetta sempre la richiesta
+    	gestisciStazione(clientFd, messaggio);
 
     }
     else if(isRichiestaRilascio(messaggio) == true) {
@@ -180,6 +176,13 @@ void gestisciRilascio (int clientFd, char* messaggio){
 	//libero il segmento
 	segmenti[strtol(messaggio, NULL, 10) - 1] = false;
 	printf("segmento liberato %lu\n", strtol(messaggio, NULL, 10));
+
+}
+
+void gestisciStazione(int clientFd, char* messaggio) {
+
+	printf("stazione concessa: %s\n", messaggio);
+	send(clientFd, "1", 10, 0);
 
 }
 
