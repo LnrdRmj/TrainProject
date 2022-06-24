@@ -18,7 +18,7 @@ segmentiManager.o: segmentiManager.c
 	gcc segmentiManager.c -c
 
 log: log.c
-	gcc log.o -o log
+	gcc log.c -o log
 
 log.o: log.c log.h
 	gcc log.c -c

@@ -41,7 +41,7 @@ int main() {
 
     int clientFd = accettaRichiesta(serverFd);
 
-    printf("Ricevuta una nuova connessione\n");
+    // printf("Ricevuta una nuova connessione\n");
 
     char buffer[1024];
     read(clientFd, buffer, 1024);

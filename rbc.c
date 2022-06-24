@@ -16,6 +16,7 @@
 #define NUMERO_TRENI 5
 #define NUMERO_STAZIONI 8
 #define SERVER_REGISTRO "serveRegistro"
+#define DEBUG true
 
 void gestisciRichiesta(int, char*);
 void gestisciOccupazione(int, char*);
@@ -79,7 +80,8 @@ int main(int argc, char const *argv[])
 				fds[1 + clientConnessi].fd = accettaRichiesta(serverFd);
 				// printf("creato il socket con fd: %i\n", fds[1 + clientConnessi].fd);
 				fds[1 + clientConnessi++].events = POLLIN;
-				printf("Connesso un nuovo client\n");
+				if(DEBUG)
+					printf("Connesso un nuovo client\n");
 
 			}
 			else {
@@ -148,7 +150,8 @@ char* getPercorsi(int registroFd, char * mappa){
 
 void gestisciRichiesta(int clientFd, char *messaggio) {
 
-	printf("letto: %s\n", messaggio);
+	if(DEBUG)
+		printf("letto: %s\n", messaggio);
 
     if (isRichiestaOccupazione(messaggio) == true){
 
@@ -182,13 +185,16 @@ void gestisciRilascio (int clientFd, char* messaggio){
 	messaggio++;
 	//libero il segmento
 	segmenti[strtol(messaggio, NULL, 10) - 1] = false;
-	printf("segmento liberato %lu\n", strtol(messaggio, NULL, 10));
+
+	if(DEBUG)
+		printf("segmento liberato %lu\n", strtol(messaggio, NULL, 10));
 
 }
 
 void gestisciStazione(int clientFd, char* messaggio) {
 
-	printf("stazione concessa: %s\n", messaggio);
+	if(DEBUG)
+		printf("stazione concessa: %s\n", messaggio);
 	send(clientFd, "1", 10, 0);
 	logRBCStazioneConcessa(messaggio, logFile);
 
@@ -206,8 +212,8 @@ void gestisciVerificaSegmentoLibero(int clientFd, char *messaggio) {
 	// Salto la prima lettera
 	messaggio++;
 
-	int numeroSegmento = strtol(messaggio, NULL, 10) - 1;
-	if (segmenti[numeroSegmento] == false){
+	int numeroSegmento = strtol(messaggio, NULL, 10);
+	if (segmenti[numeroSegmento - 1] == false){
 		logRBCSegmentoConcesso(numeroSegmento, logFile);
 		*messaggio = '1';
 	}
