@@ -18,7 +18,7 @@ segmentiManager.o: segmentiManager.c
 	gcc segmentiManager.c -c
 
 log: log.c
-	gcc segmentiManager.c -o segmentiManager
+	gcc log.o -o log
 
 log.o: log.c log.h
 	gcc log.c -c
@@ -29,10 +29,10 @@ treno: treno.o segmentiManager.o log.o socketHelper.o
 treno.o: treno.c segmentiManager.h log.h socketHelper.h
 	gcc treno.c -c
 
-rbc: rbc.o socketHelper.o segmentiManager.o
-	gcc rbc.o socketHelper.o segmentiManager.o -o rbc
+rbc: rbc.o socketHelper.o segmentiManager.o log.o
+	gcc rbc.o socketHelper.o segmentiManager.o log.o -o rbc
 
-rbc.o: rbc.c socketHelper.h segmentiManager.h
+rbc.o: rbc.c socketHelper.h segmentiManager.h log.h
 	gcc rbc.c -c
 
 socketHelper: socketHelper.c

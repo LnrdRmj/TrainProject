@@ -39,21 +39,15 @@ int main(int argc, char *argv[]) {
 }
 
 void startRegistro() {
-
-  int pid = fork();
-  if (pid == 0) {
-
-    execl("registro", "registro", NULL);
-
-  }
+  
+  if (fork() == 0) execl("registro", "registro", NULL);
 
 }
 
 void startTreni(char *mode,char mappa[10]) {
 
-  // printf("I treni usano la mappa %s\n", mappa);
   //NUMERO_PROCESSI_TRENI
-  for (int i = 0; i < 1; i++) {
+  for (int i = 0; i < NUMERO_PROCESSI_TRENI; i++) {
 
     // Fai partire i proessi treni
     int pid = fork();

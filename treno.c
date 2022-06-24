@@ -44,13 +44,13 @@ int main(int argc, char *argv[]) {
 	char *tmp;
 	long lnumeroTreno = strtol(numTreno, &tmp, 10);
 
-	FILE *logFile = creaFileLogTreno(lnumeroTreno, logFile);
+	FILE *logFile = creaFileLogTreno(lnumeroTreno);
 
 	char *cammino = getCammino(lnumeroTreno, mappa);
 
-	// printf("Cammino %s\n", cammino);
-
 	startJourney(cammino, lnumeroTreno, logFile, mode);
+
+	fclose(logFile);
 
 	return 0;
 
@@ -107,18 +107,10 @@ void startJourney(char * cammino, long numeroTreno, FILE *logFile, char* mode){
 
 		if(isStazione(segmento)){
 
-			if (serverRBC != -1) {
+			if (serverRBC != -1) permessoStazione(serverRBC, segmento);
 
-				permessoStazione(serverRBC, segmento);
-
-			}
-
-			if (i == 0) {
-				logInizioViaggio(segmento, logFile);
-			}
-			else{
-				logFineViaggio(segmento, logFile);	
-			}
+			if (i == 0) logInizioViaggio(segmento, logFile);
+			else 		logFineViaggio(segmento, logFile);
 
 			if(DEBUG)
 				printf("Stazione %s\n", segmento);
