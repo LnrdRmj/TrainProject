@@ -15,7 +15,7 @@
 #define ETCS1 "ETCS1"
 #define ETCS2 "ETCS2"
 #define PREFISSO_FILE_SEGMENTO "MA"
-#define DEBUG true
+#define DEBUG false
 #define SLEEP_TIME 1
 
 typedef bool (*politicaSegmento) (int, int);
@@ -35,7 +35,7 @@ int main(int argc, char *argv[]) {
 
 	// argv[0] e' il nome del programma
 	char *numTreno = argv[1]; 	// Il primo argomento è il numero del treno
-	char *mode = argv[2];		// Il secondo invece e' la modalita'
+	char *modalita = argv[2];		// Il secondo invece e' la modalita'
 	char *mappa = argv[3];		// Il terzo indica la mappa da utilizzare
 
 	// Converto la stringa in long
@@ -47,7 +47,7 @@ int main(int argc, char *argv[]) {
 	char *cammino = getCammino(lnumeroTreno, mappa);
 
 	// startAttraversata 
-	startAttraversata(cammino, lnumeroTreno, logFile, mode);
+	startAttraversata(cammino, lnumeroTreno, logFile, modalita);
 
 	fclose(logFile);
 
@@ -69,7 +69,7 @@ char* getCammino(long lnumeroTreno, char *mappa){
 
 	// Leggo dal server registro il cammino 
 	// Il registro risponde con un messaggio del tipo:
-	// MA1;MA2;MA3;MA4;MA5;MA6
+	// S1;MA1;MA2;MA3;MA4;MA5;MA6;S2
 	char *cammino = malloc(100);
 	read(serverFd, cammino, 100);
 	if(DEBUG) printf("Il cammino del treno %lu e': %s\n", lnumeroTreno, cammino);
@@ -80,24 +80,26 @@ char* getCammino(long lnumeroTreno, char *mappa){
 
 }
 
-void startAttraversata(char * cammino, long numeroTreno, FILE *logFile, char* mode){
+void startAttraversata(char * cammino, long numeroTreno, FILE *logFile, char* modalita){
 
 	// Questo array conterra' il percorso sottoforma di array
 	char *passiCammino[10];
 
+	// ottengo i passi dell'attraversata
 	int numPassi = splitString(cammino, ";", passiCammino);
+
 	char *previousSegment = NULL;
 
 	if (DEBUG)
 		printf("Il treno %lu e' partito \n", numeroTreno);
 
 	int serverRBC = -1;
-	if(strcmp(mode, ETCS2) == 0)
+	if(strcmp(modalita, ETCS2) == 0) // Se sono in modalita' ETCS2 allora mi collego al server RBC
 		serverRBC = creaConnessioneAServer(SERVER_RBC);
 
-	// politicaSegmento takeSegmento = scegliStrategia(mode);
-	politicaRilascio rilascioSegmento = scegliStrategiaRilascio(mode);
-	controlloSegmentoLibero isSegmentoLibero = stategiaSegmentoIsLibero(mode);
+	// Queste sono le "politiche" che cambiano in base alla modalita scelta (ETCS1/2)
+	politicaRilascio rilascioSegmento = scegliStrategiaRilascio(modalita);
+	controlloSegmentoLibero isSegmentoLibero = stategiaSegmentoIsLibero(modalita);
 
 	for (int i = 0; i < numPassi; ++i){
 
@@ -156,12 +158,25 @@ void startAttraversata(char * cammino, long numeroTreno, FILE *logFile, char* mo
 			}
 
 		}
+
 		sleep(SLEEP_TIME);
 
 	}
 
 	close(serverRBC);
 	printf("Il treno %lu ha finito\n", numeroTreno);
+
+}
+
+void gestisciStazione() {
+
+
+
+}
+
+void gestisciSegmento() {
+
+
 
 }
 
@@ -181,13 +196,14 @@ bool permessoStazione(int serverRBC, char *stazione) {
 
 bool segmentoIsLiberoETCS1(int numeroSegmento, int fantoccio) {
 
+	// Nel caso di ETCS1 ci basta verificare che il segmento abbia "0" nel suo file
 	return segmentoIsLibero(numeroSegmento);
 
 }
 
 bool segmentoIsLiberoETCS2(int numeroSegmento, int serverRBC) {
 
-	// printf("Sto prendendo un segmento\n");
+	// Nel caso di ETCS2 dobbiamo contattare il server RBC per controllare un segmento
 	char *message = malloc(10);
 	sprintf(message, "L%i", numeroSegmento); //L per Libero
 	send(serverRBC, message, 10, 0);
@@ -199,12 +215,13 @@ bool segmentoIsLiberoETCS2(int numeroSegmento, int serverRBC) {
 
 }
 
-controlloSegmentoLibero stategiaSegmentoIsLibero(char *mode){
+// Sceglie la strategia usate per verificare se un segmento e' libero in base alla modalita
+controlloSegmentoLibero stategiaSegmentoIsLibero(char *modalita){
 
-	if (strcmp(mode, "ETCS1") == 0) {
+	if (strcmp(modalita, "ETCS1") == 0) {
 		return segmentoIsLiberoETCS1;
 	}
-	else if(strcmp(mode, "ETCS2") == 0){
+	else if(strcmp(modalita, "ETCS2") == 0){
 		return segmentoIsLiberoETCS2;
 	}
 
@@ -220,14 +237,17 @@ void takeSegmentoRBC (int numeroSegmento, int serverRBC) {
 
 void politicaRilascioETCS1(int segmento, int fantoccio) {
 	
+	// Nella modalita ETCS1 ci basta scrivere "0" nel file del segmento corrispondente
 	freeSegmento(segmento);
 
 }
 
 void politicaRilascioETCS2(int segmento, int serverRBC) {
 
+	// Nella politica ETCS2 dobbiamo continuare a scrivere "0" sul file segmento ma...
 	freeSegmento(segmento);
 
+	// ...dobbiamo anche informare il server RBC 
 	char *message = malloc(10);
 	sprintf(message, "R%i", segmento); //R per "Rilascio"
 
@@ -235,12 +255,13 @@ void politicaRilascioETCS2(int segmento, int serverRBC) {
 
 }
 
-politicaRilascio scegliStrategiaRilascio(char *mode) {
+// Sceglie la strategia usate per rilasciare un segmento in base alla modalita
+politicaRilascio scegliStrategiaRilascio(char *modalita) {
 
-	if (strcmp(mode, "ETCS1") == 0) {
+	if (strcmp(modalita, "ETCS1") == 0) {
 		return politicaRilascioETCS1;
 	}
-	else if(strcmp(mode, "ETCS2") == 0){
+	else if(strcmp(modalita, "ETCS2") == 0){
 		return politicaRilascioETCS2;
 	}
 
