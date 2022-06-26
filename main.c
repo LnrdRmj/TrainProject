@@ -40,8 +40,7 @@ int main(int argc, char *argv[]) {
 // Fa partire il processo registro
 void startRegistro() {
 
-  if (fork())
-    execl("registro", "registro", NULL);
+  if (fork() == 0) execl("registro", "registro", NULL);
 
 }
 

@@ -46,13 +46,13 @@ int main(int argc, char *argv[]) {
 	char *tmp;
 	long lnumeroTreno = strtol(numTreno, &tmp, 10);
 
-	FILE *logFile = creaFileLogTreno(lnumeroTreno, logFile);
+	FILE *logFile = creaFileLogTreno(lnumeroTreno);
 
 	char *cammino = getCammino(lnumeroTreno, mappa);
 
-	// printf("Cammino %s\n", cammino);
-
 	startJourney(cammino, lnumeroTreno, logFile, mode);
+
+	fclose(logFile);
 
 	return 0;
 
@@ -109,18 +109,10 @@ void startJourney(char * cammino, long numeroTreno, FILE *logFile, char* mode){
 
 		if(isStazione(segmento)){
 
-			if (serverRBC != -1) {
+			if (serverRBC != -1) permessoStazione(serverRBC, segmento);
 
-				permessoStazione(serverRBC, segmento);
-
-			}
-
-			if (i == 0) {
-				logInizioViaggio(segmento, logFile);
-			}
-			else{
-				logFineViaggio(segmento, logFile);	
-			}
+			if (i == 0) logInizioViaggio(segmento, logFile);
+			else 		logFineViaggio(segmento, logFile);
 
 			if(DEBUG)
 				printf("Stazione %s\n", segmento);
@@ -156,7 +148,8 @@ void startJourney(char * cammino, long numeroTreno, FILE *logFile, char* mode){
 				// Se si blocca allora deve rimanere sullo stesso segmento
 				// quindi diminuisco di uno l'indice
 				--i;
-				if (true)
+				logTrenoBloccato(segmento, logFile);
+				if (DEBUG)
 					printf("Il treno %lu si e' bloccato sul segmento %s bloccato\n", numeroTreno, segmento);
 			}
 
@@ -172,16 +165,13 @@ void startJourney(char * cammino, long numeroTreno, FILE *logFile, char* mode){
 
 bool permessoStazione(int serverRBC, char *stazione) {
 
-	printf("Richiedo permesso stazione\n");
-
 	char *message = malloc(10);
 	// Stazione sara una stringa del tipo SX dove X e' un numero tra 1 e 8 (compresi)
 	// A me interessa solo il numero quindi
-	sprintf(message, "S%i", atoi(++message)); //S per Stazione
+	sprintf(message, "S%i", atoi(++stazione)); //S per Stazione
 	send(serverRBC, message, 10, 0);
 
 	recv(serverRBC, message, 10, 0);
-	printf("risposta %s\n", message);
 
 	return *message == '1';
 
@@ -199,11 +189,9 @@ bool segmentoIsLiberoETCS2(int numeroSegmento, int serverRBC) {
 	char *message = malloc(10);
 	sprintf(message, "L%i", numeroSegmento); //L per Libero
 	send(serverRBC, message, 10, 0);
-	printf("libero? %s\n", message);
 
 	char *response = malloc(10);
     recv(serverRBC, response, 10, 0);
-    printf("Risposta%s\n", response);
 
 	return *response == '1';
 
@@ -215,7 +203,6 @@ controlloSegmentoLibero stategiaSegmentoIsLibero(char *mode){
 		return segmentoIsLiberoETCS1;
 	}
 	else if(strcmp(mode, "ETCS2") == 0){
-		printf("arriva\n");
 		return segmentoIsLiberoETCS2;
 	}
 
@@ -241,7 +228,6 @@ void politicaRilascioETCS2(int segmento, int serverRBC) {
 
 	char *message = malloc(10);
 	sprintf(message, "R%i", segmento); //R per "Rilascio"
-	printf("rilascio segmento: %s\n", message);
 
 	send(serverRBC, message, 10, 0);
 
@@ -269,7 +255,6 @@ int splitString(char *toSplit, const char *delimiter, char *tokens[10]){
 	while(token != NULL){
 		tokens[i] = malloc(50);
 		strcpy(tokens[i], token);
-		// printf("Questo e da tokens %s\n", tokens[i]);
 		i++;
 		token = strtok(NULL, delimiter);
 	}

@@ -8,6 +8,7 @@
 
 #include "segmentiManager.h"
 #include "socketHelper.h"
+#include "log.h"
 
 #define SERVER_RBC_NAME "serverRBC"
 #define SERVER_QUEUE_LENGTH 10
@@ -15,6 +16,7 @@
 #define NUMERO_TRENI 5
 #define NUMERO_STAZIONI 8
 #define SERVER_REGISTRO "serveRegistro"
+#define DEBUG true
 
 void gestisciRichiesta(int, char*);
 void gestisciOccupazione(int, char*);
@@ -30,6 +32,7 @@ void setup();
 
 bool segmenti[NUMERO_TRATTE];
 int stazioni[NUMERO_STAZIONI];
+FILE* logFile;
 
 int main(int argc, char const *argv[])
 {
@@ -43,7 +46,6 @@ int main(int argc, char const *argv[])
 	int registroFd = creaConnessioneAServer(SERVER_REGISTRO);
 	
 	char *percorsi = getPercorsi(registroFd, mappa);
-	// printf("percorsi %s\n", percorsi);
 
 	int serverFd = createServer(SERVER_RBC_NAME, SERVER_QUEUE_LENGTH);
 
@@ -78,7 +80,8 @@ int main(int argc, char const *argv[])
 				fds[1 + clientConnessi].fd = accettaRichiesta(serverFd);
 				// printf("creato il socket con fd: %i\n", fds[1 + clientConnessi].fd);
 				fds[1 + clientConnessi++].events = POLLIN;
-				printf("Connesso un nuovo client\n");
+				if(DEBUG)
+					printf("Connesso un nuovo client\n");
 
 			}
 			else {
@@ -120,6 +123,12 @@ void setup() {
 		stazioni[i] = 0;
 	}
 
+	logFile = creaFileLogServerRBC();
+
+	logRBCStazioneConcessa("test", logFile);
+
+	// fclose(logFile);
+
 }
 
 char* getPercorsi(int registroFd, char * mappa){
@@ -141,7 +150,8 @@ char* getPercorsi(int registroFd, char * mappa){
 
 void gestisciRichiesta(int clientFd, char *messaggio) {
 
-	printf("letto: %s\n", messaggio);
+	if(DEBUG)
+		printf("letto: %s\n", messaggio);
 
     if (isRichiestaOccupazione(messaggio) == true){
 
@@ -175,14 +185,18 @@ void gestisciRilascio (int clientFd, char* messaggio){
 	messaggio++;
 	//libero il segmento
 	segmenti[strtol(messaggio, NULL, 10) - 1] = false;
-	printf("segmento liberato %lu\n", strtol(messaggio, NULL, 10));
+
+	if(DEBUG)
+		printf("segmento liberato %lu\n", strtol(messaggio, NULL, 10));
 
 }
 
 void gestisciStazione(int clientFd, char* messaggio) {
 
-	printf("stazione concessa: %s\n", messaggio);
+	if(DEBUG)
+		printf("stazione concessa: %s\n", messaggio);
 	send(clientFd, "1", 10, 0);
+	logRBCStazioneConcessa(messaggio, logFile);
 
 }
 
@@ -198,10 +212,13 @@ void gestisciVerificaSegmentoLibero(int clientFd, char *messaggio) {
 	// Salto la prima lettera
 	messaggio++;
 
-	if (segmenti[strtol(messaggio, NULL, 10)] == false)
+	int numeroSegmento = strtol(messaggio, NULL, 10);
+	if (segmenti[numeroSegmento - 1] == false){
+		logRBCSegmentoConcesso(numeroSegmento, logFile);
 		*messaggio = '1';
+	}
 	else {
-		printf("bloccato un treno\n");
+		logRBCSegmentoNegato(numeroSegmento, logFile);
 		*messaggio = '0';
 	}
 
