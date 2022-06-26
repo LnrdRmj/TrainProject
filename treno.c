@@ -16,41 +16,38 @@
 #define ETCS2 "ETCS2"
 #define PREFISSO_FILE_SEGMENTO "MA"
 #define DEBUG true
+#define SLEEP_TIME 1
 
 typedef bool (*politicaSegmento) (int, int);
 typedef void (*politicaRilascio) (int, int);
 typedef bool (*controlloSegmentoLibero) (int, int);
 
 char* getCammino(long, char *);
-void startJourney(char *, long, FILE *, char*);
+void startAttraversata(char *, long, FILE *, char*);
 bool isStazione(char *);
-// void liberaSegmento(char *);
 int splitString(char *, const char *, char *[]);
-// politicaSegmento scegliStrategia(char *);
 politicaRilascio scegliStrategiaRilascio(char *);
 controlloSegmentoLibero stategiaSegmentoIsLibero(char *);
 void takeSegmentoRBC (int, int);
 bool permessoStazione(int, char *);
-// int creaConnessioneAServer(const char*);
 
 int main(int argc, char *argv[]) {
 
-	printf("qualcosa\n");
-
-	// Il primo argomento è il numero del treno
-	char *numTreno = argv[1];
-	char *mode = argv[2];
-	char *mappa = argv[3];
+	// argv[0] e' il nome del programma
+	char *numTreno = argv[1]; 	// Il primo argomento è il numero del treno
+	char *mode = argv[2];		// Il secondo invece e' la modalita'
+	char *mappa = argv[3];		// Il terzo indica la mappa da utilizzare
 
 	// Converto la stringa in long
-	char *tmp;
-	long lnumeroTreno = strtol(numTreno, &tmp, 10);
+	long lnumeroTreno = strtol(numTreno, NULL, 10);
 
 	FILE *logFile = creaFileLogTreno(lnumeroTreno);
 
+	// Recupera il cammino del treno dal processo registro
 	char *cammino = getCammino(lnumeroTreno, mappa);
 
-	startJourney(cammino, lnumeroTreno, logFile, mode);
+	// startAttraversata 
+	startAttraversata(cammino, lnumeroTreno, logFile, mode);
 
 	fclose(logFile);
 
@@ -60,14 +57,19 @@ int main(int argc, char *argv[]) {
 
 char* getCammino(long lnumeroTreno, char *mappa){
 
+	// Creo la connesione al server registro
 	int serverFd = creaConnessioneAServer(SERVER_REGISTRO);
 
-	char *buffer;
-	asprintf(&buffer, "%i", lnumeroTreno); 
+	char *buffer = malloc(10);
+	sprintf(buffer, "%li", lnumeroTreno); 
 
-	char *dataForServer = strcat(buffer, mappa);
-	write(serverFd, dataForServer, strlen(dataForServer) + 1);
+	// Scrivo al server registro che treno sono
+	char *dataPerServer = strcat(buffer, mappa);
+	write(serverFd, dataPerServer, strlen(dataPerServer) + 1);
 
+	// Leggo dal server registro il cammino 
+	// Il registro risponde con un messaggio del tipo:
+	// MA1;MA2;MA3;MA4;MA5;MA6
 	char *cammino = malloc(100);
 	read(serverFd, cammino, 100);
 	if(DEBUG) printf("Il cammino del treno %lu e': %s\n", lnumeroTreno, cammino);
@@ -78,7 +80,7 @@ char* getCammino(long lnumeroTreno, char *mappa){
 
 }
 
-void startJourney(char * cammino, long numeroTreno, FILE *logFile, char* mode){
+void startAttraversata(char * cammino, long numeroTreno, FILE *logFile, char* mode){
 
 	// Questo array conterra' il percorso sottoforma di array
 	char *passiCammino[10];
@@ -154,7 +156,7 @@ void startJourney(char * cammino, long numeroTreno, FILE *logFile, char* mode){
 			}
 
 		}
-		sleep(1);
+		sleep(SLEEP_TIME);
 
 	}
 
