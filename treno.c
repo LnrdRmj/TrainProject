@@ -35,6 +35,8 @@ bool permessoStazione(int, char *);
 
 int main(int argc, char *argv[]) {
 
+	printf("qualcosa\n");
+
 	// Il primo argomento è il numero del treno
 	char *numTreno = argv[1];
 	char *mode = argv[2];

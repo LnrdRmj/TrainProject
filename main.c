@@ -6,26 +6,25 @@
 
 #include "segmentiManager.h"
 
-#define NUMERO_TRATTE 16
+#define NUMERO_SEGMENTI 16
 #define NUMERO_PROCESSI_TRENI 5
 
 // Questo file rappresenta il processo padre
 
-void creaFiles(void);
+void creaFilesSegmenti(void);
 void inizializzaProcessiTreni(void);
 void startRegistro(void);
 void startTreni(char *, char[10]);
 
 int main(int argc, char *argv[]) {
 
-  // TODO: controllare gli argomenti
-
-  creaFiles();
+  creaFilesSegmenti();
 
   if (strcmp(argv[1], "ETCS2") == 0 && strcmp(argv[2], "RBC") == 0) {
 
     execl("rbc", "rbc", argv[3], NULL);
 
+    // Se devo solo lanciare il server RBC mi fermo
     return 0;
 
   }
@@ -38,29 +37,23 @@ int main(int argc, char *argv[]) {
 
 }
 
+// Fa partire il processo registro
 void startRegistro() {
 
-  int pid = fork();
-  if (pid == 0) {
-
+  if (fork())
     execl("registro", "registro", NULL);
-
-  }
 
 }
 
-void startTreni(char *mode,char mappa[10]) {
+// Fa partire i processi treni
+void startTreni(char *mode, char mappa[10]) {
 
-  // printf("I treni usano la mappa %s\n", mappa);
-  //NUMERO_PROCESSI_TRENI
-  for (int i = 0; i < 1; i++) {
+  for (int i = 0; i < NUMERO_PROCESSI_TRENI; i++) {
 
-    // Fai partire i proessi treni
-    int pid = fork();
-    if (pid == 0){
-
+    if (fork() == 0){
+      printf("arriva\n");
       char *numeroTreno;
-      asprintf(&numeroTreno, "%i", i);
+      sprintf(numeroTreno, "%i", i);
 
       execl("treno", "treno", numeroTreno, mode, mappa, NULL);
 
@@ -70,12 +63,9 @@ void startTreni(char *mode,char mappa[10]) {
 
 }
 
-void creaFiles() {
+void creaFilesSegmenti() {
 
-  for (int i = 1; i <= NUMERO_TRATTE; i++) {
-
-    creaFileSegmento(i);
-
-  }
+  for (int i = 1; i <= NUMERO_SEGMENTI; i++)
+    creaFileSegmento(i); // parte di segmentiManager.c
 
 }
