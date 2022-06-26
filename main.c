@@ -51,9 +51,10 @@ void startTreni(char *mode, char mappa[10]) {
 
     if (fork() == 0){
       printf("arriva\n");
-      char *numeroTreno;
+      char *numeroTreno = malloc(10);
       sprintf(numeroTreno, "%i", i);
 
+      printf("numeroTreno %s\n", numeroTreno);
       execl("treno", "treno", numeroTreno, mode, mappa, NULL);
 
     }
@@ -62,6 +63,7 @@ void startTreni(char *mode, char mappa[10]) {
 
 }
 
+// Crea i file per memorizzare gli stati dei segmenti
 void creaFilesSegmenti() {
 
   for (int i = 1; i <= NUMERO_SEGMENTI; i++)
