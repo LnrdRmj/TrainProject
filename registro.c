@@ -36,7 +36,6 @@ char mappa2[NUMERO_TRENI][MAX_LUNGHEZZA_CAMMINO] = {
 int main() {
 
   int serverFd = createServer(SERVER_NAME, NUMERO_TRENI);
-  printf("arriva registro\n");
 
   while(1) {
 

@@ -78,7 +78,6 @@ int main(int argc, char const *argv[])
 
 				// Nuova connessione
 				fds[1 + clientConnessi].fd = accettaRichiesta(serverFd);
-				// printf("creato il socket con fd: %i\n", fds[1 + clientConnessi].fd);
 				fds[1 + clientConnessi++].events = POLLIN;
 				if(DEBUG)
 					printf("Connesso un nuovo client\n");
@@ -97,8 +96,11 @@ int main(int argc, char const *argv[])
 					continue;
 				}
 
-				gestisciRichiesta(fds[i].fd, buffer);
 
+				printf("mesaggio da client: %s\n", buffer);
+
+				gestisciRichiesta(fds[i].fd, buffer);
+				
 			}
 
 		}

@@ -18,36 +18,40 @@
 #define DEBUG false
 #define SLEEP_TIME 1
 
-typedef bool (*politicaSegmento) (int, int);
+// typedef bool (*politicaSegmento) (int, int);
 typedef void (*politicaRilascio) (int, int);
 typedef bool (*controlloSegmentoLibero) (int, int);
 
-char* getCammino(long, char *);
-void startAttraversata(char *, long, FILE *, char*);
-bool isStazione(char *);
-int splitString(char *, const char *, char *[]);
-politicaRilascio scegliStrategiaRilascio(char *);
-controlloSegmentoLibero stategiaSegmentoIsLibero(char *);
+void setup(char*, char*, char*);
+char* getCammino(char*);
+void startAttraversata();
+bool isStazione(char*);
+int splitString(char*, const char *, char *[]);
+politicaRilascio scegliStrategiaRilascio(char*);
+controlloSegmentoLibero stategiaSegmentoIsLibero(char*);
 void takeSegmentoRBC (int, int);
 bool permessoStazione(int, char *);
+void gestisciStazione(char*, char*);
+bool gestisciSegmento(char*, char*, char*);
+
+FILE* logFile;
+long numeroTreno;
+int serverRBC;
+char* cammino;
+politicaRilascio rilascioSegmento;
+controlloSegmentoLibero isSegmentoLibero;
 
 int main(int argc, char *argv[]) {
 
 	// argv[0] e' il nome del programma
-	char *numTreno = argv[1]; 	// Il primo argomento è il numero del treno
-	char *modalita = argv[2];		// Il secondo invece e' la modalita'
-	char *mappa = argv[3];		// Il terzo indica la mappa da utilizzare
+	char* numTreno = argv[1]; 	// Il primo argomento è il numero del treno
+	char* modalita = argv[2];		// Il secondo invece e' la modalita'
+	char* mappa = argv[3];		// Il terzo indica la mappa da utilizzare
 
-	// Converto la stringa in long
-	long lnumeroTreno = strtol(numTreno, NULL, 10);
-
-	FILE *logFile = creaFileLogTreno(lnumeroTreno);
-
-	// Recupera il cammino del treno dal processo registro
-	char *cammino = getCammino(lnumeroTreno, mappa);
+	setup(numTreno, modalita, mappa);
 
 	// startAttraversata 
-	startAttraversata(cammino, lnumeroTreno, logFile, modalita);
+	startAttraversata(modalita);
 
 	fclose(logFile);
 
@@ -55,13 +59,35 @@ int main(int argc, char *argv[]) {
 
 }
 
-char* getCammino(long lnumeroTreno, char *mappa){
+void setup(char* numTreno, char* modalita, char* mappa){
+
+	// Converto la stringa numTreno in long
+	numeroTreno = strtol(numTreno, NULL, 10);
+
+	// Recupera il cammino del treno dal processo registro
+	cammino = getCammino(mappa);
+
+	// Inizializzo il logfile
+	logFile = creaFileLogTreno(numeroTreno);
+
+	// Inizializzo il serverRBC se in ETCS2
+	serverRBC = -1;
+	if(strcmp(modalita, ETCS2) == 0)
+		serverRBC = creaConnessioneAServer(SERVER_RBC);
+
+	// Queste sono le "politiche" che cambiano in base alla modalita scelta (ETCS1/2)
+	rilascioSegmento = scegliStrategiaRilascio(modalita);
+	isSegmentoLibero = stategiaSegmentoIsLibero(modalita);
+
+}
+
+char* getCammino(char *mappa){
 
 	// Creo la connesione al server registro
 	int serverFd = creaConnessioneAServer(SERVER_REGISTRO);
 
 	char *buffer = malloc(10);
-	sprintf(buffer, "%li", lnumeroTreno); 
+	sprintf(buffer, "%li", numeroTreno); 
 
 	// Scrivo al server registro che treno sono
 	char *dataPerServer = strcat(buffer, mappa);
@@ -72,15 +98,15 @@ char* getCammino(long lnumeroTreno, char *mappa){
 	// S1;MA1;MA2;MA3;MA4;MA5;MA6;S2
 	char *cammino = malloc(100);
 	read(serverFd, cammino, 100);
-	if(DEBUG) printf("Il cammino del treno %lu e': %s\n", lnumeroTreno, cammino);
+	if(DEBUG) printf("Il cammino del treno %lu e': %s\n", numeroTreno, cammino);
 
 	close(serverFd);
 
 	return cammino;
 
 }
-
-void startAttraversata(char * cammino, long numeroTreno, FILE *logFile, char* modalita){
+// lnumeroTreno
+void startAttraversata(){
 
 	// Questo array conterra' il percorso sottoforma di array
 	char *passiCammino[10];
@@ -93,16 +119,10 @@ void startAttraversata(char * cammino, long numeroTreno, FILE *logFile, char* mo
 	if (DEBUG)
 		printf("Il treno %lu e' partito \n", numeroTreno);
 
-	int serverRBC = -1;
-	if(strcmp(modalita, ETCS2) == 0) // Se sono in modalita' ETCS2 allora mi collego al server RBC
-		serverRBC = creaConnessioneAServer(SERVER_RBC);
-
-	// Queste sono le "politiche" che cambiano in base alla modalita scelta (ETCS1/2)
-	politicaRilascio rilascioSegmento = scegliStrategiaRilascio(modalita);
-	controlloSegmentoLibero isSegmentoLibero = stategiaSegmentoIsLibero(modalita);
-
+	// Cicla tutti i passi (quindi segmenti e stazioni) del percorso
 	for (int i = 0; i < numPassi; ++i){
 
+		// In realta il segmento puo essere anche una stazione
 		char *segmento = malloc(10);
 		strcpy(segmento, passiCammino[i]);
 
@@ -111,51 +131,23 @@ void startAttraversata(char * cammino, long numeroTreno, FILE *logFile, char* mo
 			strcpy(previousSegment, passiCammino[i - 1]);
 		}
 
+		// Se si tratta di una stazione
 		if(isStazione(segmento)){
-
-			if (serverRBC != -1) permessoStazione(serverRBC, segmento);
 
 			if (i == 0) logInizioViaggio(segmento, logFile);
 			else 		logFineViaggio(segmento, logFile);
 
-			if(DEBUG)
-				printf("Stazione %s\n", segmento);
-
-			if (previousSegment != NULL)
-				rilascioSegmento(getNumeroSegmentoDaStringa(previousSegment), serverRBC);
+			gestisciStazione(segmento, previousSegment);
 
 		}
-		// Allora e' un segmento
+		// Se si tratta di un segmento
 		else{
-
-			logStatoTreno(segmento, passiCammino[i + 1], logFile);
-
-			int numeroSegmento = getNumeroSegmentoDaStringa(segmento);
-			// printf("%s: il numero del segmetno e: %i\n", segmento, numeroSegmento);
-
-			// Libero se e' un segmento
-			if (!isStazione(previousSegment))
-				rilascioSegmento(getNumeroSegmentoDaStringa(previousSegment), serverRBC);
-
-			if(isSegmentoLibero(numeroSegmento, serverRBC) == true){
-
-				takeSegmento(numeroSegmento);
-
-				if(serverRBC != -1)
-					takeSegmentoRBC(numeroSegmento, serverRBC);
-
-				if (DEBUG)
-				printf("Il treno %lu ha occupato il segmento %i\n",numeroTreno, numeroSegmento);
-
-			}
-			else {
-				// Se si blocca allora deve rimanere sullo stesso segmento
-				// quindi diminuisco di uno l'indice
+			
+			bool result = gestisciSegmento(segmento, previousSegment, passiCammino[i + 1]);
+			// Se si blocca allora deve rimanere sullo stesso segmento e riprovare
+			// a riprenderlo quindi diminuisco di uno l'indice
+			if (result == false)
 				--i;
-				logTrenoBloccato(segmento, logFile);
-				if (DEBUG)
-					printf("Il treno %lu si e' bloccato sul segmento %s bloccato\n", numeroTreno, segmento);
-			}
 
 		}
 
@@ -168,18 +160,53 @@ void startAttraversata(char * cammino, long numeroTreno, FILE *logFile, char* mo
 
 }
 
-void gestisciStazione() {
+void gestisciStazione(char* segmento, char* previousSegment) {
 
+	if (serverRBC != -1) permessoStazione(serverRBC, segmento);
 
+	if(DEBUG)
+		printf("Stazione %s\n", segmento);
+
+	if (previousSegment != NULL)
+		rilascioSegmento(getNumeroSegmentoDaStringa(previousSegment), serverRBC);
 
 }
 
-void gestisciSegmento() {
+// Si occupa di gestire il passaggio al prossimo segmento (se possibile)
+// Ritorna true se il treno e' passato al segmento/stazione successiva, false altrimento
+bool gestisciSegmento(char* segmento, char* previousSegment, char* prossimoSegmento) {
 
+	logStatoTreno(segmento, prossimoSegmento, logFile);
 
+	int numeroSegmento = getNumeroSegmentoDaStringa(segmento);
+
+	// Libero se e' il passo precedente era un segmento
+	if (!isStazione(previousSegment))
+		rilascioSegmento(getNumeroSegmentoDaStringa(previousSegment), serverRBC);
+
+	// Se il segmento richiesto e' libero
+	if(isSegmentoLibero(numeroSegmento, serverRBC) == true){
+
+		takeSegmento(numeroSegmento);
+
+		if(serverRBC != -1)
+			takeSegmentoRBC(numeroSegmento, serverRBC);
+
+		// Il treno puo' continuare il suo cammino
+		return true;
+
+	}
+	else {
+
+		logTrenoBloccato(segmento, logFile);
+		// Il treno si e' bloccato
+		return false;
+
+	}
 
 }
 
+// Chiede il permesso di entrare in una stazione al serverRBC
 bool permessoStazione(int serverRBC, char *stazione) {
 
 	char *message = malloc(10);
@@ -216,6 +243,7 @@ bool segmentoIsLiberoETCS2(int numeroSegmento, int serverRBC) {
 }
 
 // Sceglie la strategia usate per verificare se un segmento e' libero in base alla modalita
+// Le strategie ritornano true se il segmento e' libero, false altrimenti
 controlloSegmentoLibero stategiaSegmentoIsLibero(char *modalita){
 
 	if (strcmp(modalita, "ETCS1") == 0) {
@@ -227,6 +255,7 @@ controlloSegmentoLibero stategiaSegmentoIsLibero(char *modalita){
 
 }
 
+// Comunica al serverRBC di occupare un segmento
 void takeSegmentoRBC (int numeroSegmento, int serverRBC) {
 
 	char *message = malloc(10);
@@ -236,9 +265,10 @@ void takeSegmentoRBC (int numeroSegmento, int serverRBC) {
 }
 
 void politicaRilascioETCS1(int segmento, int fantoccio) {
-	
+
 	// Nella modalita ETCS1 ci basta scrivere "0" nel file del segmento corrispondente
 	freeSegmento(segmento);
+
 
 }
 
@@ -286,6 +316,7 @@ int splitString(char *toSplit, const char *delimiter, char *tokens[10]){
 
 }
 
+// Controlla se un passo del cammino e' una stazione oppure no
 bool isStazione(char *string) {
 
 	return *string == 'S';

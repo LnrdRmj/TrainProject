@@ -47,14 +47,14 @@ void startRegistro() {
 // Fa partire i processi treni
 void startTreni(char *mode, char mappa[10]) {
 
+  // NUMERO_PROCESSI_TRENI
   for (int i = 0; i < NUMERO_PROCESSI_TRENI; i++) {
 
     if (fork() == 0){
-      printf("arriva\n");
+
       char *numeroTreno = malloc(10);
       sprintf(numeroTreno, "%i", i);
-
-      printf("numeroTreno %s\n", numeroTreno);
+      
       execl("treno", "treno", numeroTreno, mode, mappa, NULL);
 
     }

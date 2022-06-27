@@ -61,7 +61,10 @@ bool segmentoIsLibero(int segmento) {
 	asprintf(&fileName, "segmenti/%s%d", PREFISSO, segmento);
 	FILE *fileSegmento = fopen(fileName, "r");
 
-	return fgetc(fileSegmento) == '0';
+	bool result = (fgetc(fileSegmento) == '0');
+	fclose(fileSegmento);
+
+	return result;
 
 }
 
