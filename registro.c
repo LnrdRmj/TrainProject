@@ -93,7 +93,8 @@ void sendMappaIntera(int clientFd, char numeroMappa) {
 
   }
 
-  send(clientFd, mappaIntera, 1024, 0);
+  printf("mappa intera %s\n", mappaIntera);
+  send(clientFd, mappaIntera, 256, 0);
 
 }
 
