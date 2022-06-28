@@ -32,29 +32,29 @@ char mappa2[NUMERO_TRENI][MAX_LUNGHEZZA_CAMMINO] = {
     {"S5;MA4;MA3;MA2;MA1;S1"},
 };
 
-int main()
-{
+int main(){
 
     int serverFd = createServer(SERVER_NAME, NUMERO_TRENI);
 
-    while (1)
-    {
+    while (1){
 
+        // I vari client che si connettono fanno una e una sola richiesta al serverRBC
         int clientFd = accettaRichiesta(serverFd);
 
         char buffer[1024];
         read(clientFd, buffer, 1024);
 
+        // Il server puo' ricevere due tipi di messaggi: uno dal serverRBC per ricevere un'intera
+        // mappa (il messaggio sara quindi del tipo AX dove X puo' essere 1 o 2, che significano
+        // MAPPA1 o MAPPA2) o una richiesta da un treno per richiedere il proprio cammino in base
+        // una mappa. Quindi il primo carattere del messaggio identifica che tipo di richiesta e'
         if (buffer[0] == 'A')
-        {
-
             gestisciRBC(clientFd, buffer);
-        }
         else
-        {
-
             gestisciTreno(clientFd, buffer);
-        }
+
+        close(clientFd);
+
     }
 
     close(serverFd);
@@ -62,43 +62,45 @@ int main()
     return 0;
 }
 
-void gestisciRBC(int clientFd, char buffer[1024])
-{
+void gestisciRBC(int clientFd, char buffer[1024]){
 
     sendMappaIntera(clientFd, buffer[1]);
+
 }
 
-void sendMappaIntera(int clientFd, char numeroMappa)
-{
+// Costruisce e manda la mappa intera al serverRBC che l'ha richiesta
+// Per costruire la mappa intera ho concatenato tutti gli elementi di MAPPA1 o MAPPA2
+// in una stringa delimitati dal carattere '/'
+void sendMappaIntera(int clientFd, char numeroMappa){
 
     char *mappaIntera = malloc(256);
     char *tmp = mappaIntera;
+    // tmp mi serve perche' viene modificao al posto di mappaIntera
 
-    for (int i = 0; i < NUMERO_TRENI; ++i)
-    {
+    for (int i = 0; i < NUMERO_TRENI; ++i){
 
-        if (numeroMappa == '1')
-        {
+        if (numeroMappa == '1'){
+
             strcpy(tmp, mappa1[i]);
             tmp += strlen(mappa1[i]);
             *tmp = '/';
             tmp++;
         }
-        else if (numeroMappa == '2')
-        {
+        else if (numeroMappa == '2'){
+
             strcpy(tmp, mappa2[i]);
             tmp += strlen(mappa2[i]);
             *tmp = '/';
             tmp++;
         }
+
     }
 
-    printf("mappa intera %s\n", mappaIntera);
     send(clientFd, mappaIntera, 256, 0);
 }
 
-void gestisciTreno(int clientFd, char buffer[1024])
-{
+// Manda semplicemente al richiedente il cammino di un treno
+void gestisciTreno(int clientFd, char buffer[1024]){
 
     int numeroTreno = atoi(&buffer[0]);
 
@@ -108,33 +110,21 @@ void gestisciTreno(int clientFd, char buffer[1024])
 
     char *cammino = malloc(MAX_LUNGHEZZA_CAMMINO);
     getCammino(cammino, numeroTreno, mappa);
-    // printf("%s\n", cammino);
+    printf("cammino %s\n", cammino);
     write(clientFd, cammino, strlen(cammino) + 1);
 
     close(clientFd);
+
 }
 
+// Prende il cammino 
 void getCammino(char *cammino, int treno, char *mappa)
 {
 
-    int i = 0;
-
     if (strcmp(mappa, "MAPPA1") == 0)
-    {
-        while (mappa1[treno][i] != '\0')
-        {
-            cammino[i] = mappa1[treno][i];
-            ++i;
-        }
-    }
-    else if (strcmp(mappa, "MAPPA2") == 0)
-    {
-        while (mappa2[treno][i] != '\0')
-        {
-            cammino[i] = mappa2[treno][i];
-            ++i;
-        }
-    }
+        strcpy(cammino, mappa1[treno]);
 
-    cammino[i] = '\0';
+    else if (strcmp(mappa, "MAPPA2") == 0)
+        strcpy(cammino, mappa2[treno]);
+
 }

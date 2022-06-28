@@ -15,7 +15,7 @@
 #define ETCS1 "ETCS1"
 #define ETCS2 "ETCS2"
 #define PREFISSO_FILE_SEGMENTO "MA"
-#define DEBUG false
+#define DEBUG true
 #define SLEEP_TIME 1
 
 // typedef bool (*politicaSegmento) (int, int);

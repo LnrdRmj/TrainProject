@@ -76,7 +76,7 @@ bool takeSegmento(int segmento) {
 
 	char* fileName = malloc(20);
 
-	sprintf(&fileName, "segmenti/%s%d", PREFISSO, segmento);
+	sprintf(fileName, "segmenti/%s%d", PREFISSO, segmento);
 
 	FILE *fileSegmento = fopen(fileName, "r+");
 	if (fileSegmento == NULL) printf("Fail segmento %i\n", segmento);
