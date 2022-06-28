@@ -1,6 +1,5 @@
-segmenti/
-log/
-bin/
+segmenti/*
+logs/*
 *
 !*.*
 *.o
