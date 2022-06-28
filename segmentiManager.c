@@ -7,8 +7,8 @@
 #define PREFISSO "MA"
 
 void creaFileSegmento(int);
-void readSegmento(int, char*);
-int getNumeroSegmentoDaStringa(char*);
+void readSegmento(int, char *);
+int getNumeroSegmentoDaStringa(char *);
 bool isLettera(char);
 bool segmentoIsLibero(int);
 bool takeSegmento(int);
@@ -16,98 +16,93 @@ void freeSegmento(int);
 
 void creaFileSegmento(int numSegmento){
 
-  char *pathName;
-  asprintf(&pathName, "segmenti/%s%d", PREFISSO, numSegmento);
+    char *pathName;
+    asprintf(&pathName, "segmenti/%s%d", PREFISSO, numSegmento);
 
-  FILE *file = fopen(pathName, "w");
+    FILE *file = fopen(pathName, "w");
 
-  // Inizalizzazione a 0 dei file
-  fputc('0', file);
-  fclose(file);
+    // Inizalizzazione a 0 dei file
+    fputc('0', file);
+    fclose(file);
 
-  // Setta i permessi corretti del file
-  chmod(pathName, 0666);
-
+    // Setta i permessi corretti del file
+    chmod(pathName, 0666);
 }
 
-void readSegmento(int segmento, char* occupato){
+void readSegmento(int segmento, char *occupato){
 
-	char *fileName = malloc(3);
+    char *fileName = malloc(3);
 
-	asprintf(&fileName, "segmenti/%s%d", PREFISSO, segmento);
-	//printf("%s\n", fileName);
-	FILE *fileSegmento = fopen(fileName, "r");
+    asprintf(&fileName, "segmenti/%s%d", PREFISSO, segmento);
+    // printf("%s\n", fileName);
+    FILE *fileSegmento = fopen(fileName, "r");
 
-	if (fileSegmento == NULL) printf("Fail segmeno %i\n", segmento);
+    if (fileSegmento == NULL)
+        printf("Fail segmeno %i\n", segmento);
 
-	*occupato = fgetc(fileSegmento);
-
+    *occupato = fgetc(fileSegmento);
 }
 
-int getNumeroSegmentoDaStringa(char *segmento) {
+int getNumeroSegmentoDaStringa(char *segmento){
 
-	// Salta le prime lettere
-	while(isLettera(*segmento))
-		segmento++;
-	// Converte da stringa a numero
-	return strtol(segmento, NULL, 10);
-
+    // Salta le prime lettere
+    while (isLettera(*segmento))
+        segmento++;
+    // Converte da stringa a numero
+    return strtol(segmento, NULL, 10);
 }
 
-bool segmentoIsLibero(int segmento) {
+bool segmentoIsLibero(int segmento){
 
-	char *fileName;
+    char *fileName;
 
-	asprintf(&fileName, "segmenti/%s%d", PREFISSO, segmento);
-	FILE *fileSegmento = fopen(fileName, "r");
+    asprintf(&fileName, "segmenti/%s%d", PREFISSO, segmento);
+    FILE *fileSegmento = fopen(fileName, "r");
 
-	bool result = (fgetc(fileSegmento) == '0');
-	fclose(fileSegmento);
+    bool result = (fgetc(fileSegmento) == '0');
+    fclose(fileSegmento);
 
-	return result;
-
+    return result;
 }
 
-bool takeSegmento(int segmento) {
+bool takeSegmento(int segmento){
 
-	char *fileName;
+    char *fileName;
 
-	asprintf(&fileName, "segmenti/%s%d", PREFISSO, segmento);
-	//printf("%s\n", fileName);
-	FILE *fileSegmento = fopen(fileName, "r+");
-	if (fileSegmento == NULL) printf("Fail segmento %i\n", segmento);
+    asprintf(&fileName, "segmenti/%s%d", PREFISSO, segmento);
+    // printf("%s\n", fileName);
+    FILE *fileSegmento = fopen(fileName, "r+");
+    if (fileSegmento == NULL)
+        printf("Fail segmento %i\n", segmento);
 
-	// if(fgetc(fileSegmento) == '0') {
-	// 	// Mi riposiziono all'inizio del file
-	// 	fseek(fileSegmento, 0, SEEK_SET);
-	fputc('1', fileSegmento);
+    // if(fgetc(fileSegmento) == '0') {
+    // 	// Mi riposiziono all'inizio del file
+    // 	fseek(fileSegmento, 0, SEEK_SET);
+    fputc('1', fileSegmento);
 
-	// 	fclose(fileSegmento);
+    // 	fclose(fileSegmento);
 
-	// 	return true;
-	// }
+    // 	return true;
+    // }
 
-	fclose(fileSegmento);
-	return false;
-
+    fclose(fileSegmento);
+    return false;
 }
 
 // Mette a 0 il segmento e lo "libera"
-void freeSegmento(int segmento) {
+void freeSegmento(int segmento){
 
-	char *fileName;
-	asprintf(&fileName, "segmenti/%s%d", PREFISSO, segmento);
-	
-	FILE *fileSegmento = fopen(fileName, "w");
-	fputc('0', fileSegmento);
-	
-	fclose(fileSegmento);
+    char *fileName;
+    asprintf(&fileName, "segmenti/%s%d", PREFISSO, segmento);
 
+    FILE *fileSegmento = fopen(fileName, "w");
+    fputc('0', fileSegmento);
+
+    fclose(fileSegmento);
 }
 
-bool isLettera(char daTestare) {
+bool isLettera(char daTestare){
 
-	return ( daTestare >= 'A' && daTestare <= 'Z' ) || 
-			( daTestare >= 'a' && daTestare <= 'z' );
-
+    return (daTestare >= 'A' && daTestare <= 'Z') ||
+           (daTestare >= 'a' && daTestare <= 'z');
 }
