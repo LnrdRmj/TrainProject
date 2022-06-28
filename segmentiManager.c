@@ -26,7 +26,7 @@ void creaFileSegmento(int numSegmento){
     fputc('0', file);
     fclose(file);
 
-    // Setta i permessi corretti del file
+    // Setta i permessi corretti al file
     chmod(pathName, 0666);
 }
 
