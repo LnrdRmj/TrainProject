@@ -11,8 +11,7 @@
 #define MAX_LUNGHEZZA_CAMMINO 100
 #define SERVER_NAME "serveRegistro"
 
-void stampaMappa (const char mappa[NUMERO_TRENI][MAX_LUNGHEZZA_CAMMINO][10]);
-void getCammino(char *, int, char *);
+void getCammino(char*, int, char*);
 void gestisciRBC(int, char[1024]);
 void sendMappaIntera(int, char);
 void gestisciTreno(int, char [1024]);
@@ -133,21 +132,5 @@ void getCammino(char* cammino, int treno, char* mappa){
   }
 
   cammino[i] = '\0';
-
-}
-
-void stampaMappa(const char mappa[NUMERO_TRENI][MAX_LUNGHEZZA_CAMMINO][10]){
-
-  for (size_t i = 0; i < NUMERO_TRENI; i++) {
-
-    for (size_t j = 0; j < MAX_LUNGHEZZA_CAMMINO; j++) {
-
-      printf("%s ", mappa[i][j]);
-
-    }
-
-    printf("\n");
-
-  }
 
 }

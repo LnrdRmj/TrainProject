@@ -14,6 +14,7 @@ bool segmentoIsLibero(int);
 bool takeSegmento(int);
 void freeSegmento(int);
 
+// Crea e inizializza il file per memorizzare lo stato di un segmento 
 void creaFileSegmento(int numSegmento){
 
     char *pathName;
@@ -29,13 +30,14 @@ void creaFileSegmento(int numSegmento){
     chmod(pathName, 0666);
 }
 
-void readSegmento(int segmento, char *occupato){
+// Legge il contenuto di un file segmento
+void readSegmento(int segmento, char* occupato){
 
-    char *fileName = malloc(3);
+	char* fileName = malloc(3);
 
-    asprintf(&fileName, "segmenti/%s%d", PREFISSO, segmento);
-    // printf("%s\n", fileName);
-    FILE *fileSegmento = fopen(fileName, "r");
+	asprintf(&fileName, "segmenti/%s%d", PREFISSO, segmento);
+	//printf("%s\n", fileName);
+	FILE* fileSegmento = fopen(fileName, "r");
 
     if (fileSegmento == NULL)
         printf("Fail segmeno %i\n", segmento);
@@ -43,21 +45,25 @@ void readSegmento(int segmento, char *occupato){
     *occupato = fgetc(fileSegmento);
 }
 
-int getNumeroSegmentoDaStringa(char *segmento){
+// Trasforma il nomde di un segmento in un numero
+// Esempio: MA3 => 3
+int getNumeroSegmentoDaStringa(char* segmento) {
 
-    // Salta le prime lettere
-    while (isLettera(*segmento))
-        segmento++;
-    // Converte da stringa a numero
-    return strtol(segmento, NULL, 10);
+	// Salta le prime lettere
+	while(isLettera(*segmento))
+		segmento++;
+	// Converte da stringa a numero
+	return strtol(segmento, NULL, 10);
 }
 
-bool segmentoIsLibero(int segmento){
+// Verifica che un segmento sia libero o meno
+// Ritorna vero se il segmento e' liberom, false altrimenti
+bool segmentoIsLibero(int segmento) {
 
-    char *fileName;
+	char* fileName;
 
-    asprintf(&fileName, "segmenti/%s%d", PREFISSO, segmento);
-    FILE *fileSegmento = fopen(fileName, "r");
+	asprintf(&fileName, "segmenti/%s%d", PREFISSO, segmento);
+	FILE* fileSegmento = fopen(fileName, "r");
 
     bool result = (fgetc(fileSegmento) == '0');
     fclose(fileSegmento);
@@ -65,32 +71,24 @@ bool segmentoIsLibero(int segmento){
     return result;
 }
 
-bool takeSegmento(int segmento){
+// Prende il segmento, cioe' imposta a 1 il contenuto di un file segmento
+bool takeSegmento(int segmento) {
 
-    char *fileName;
+	char* fileName = malloc(20);
 
-    asprintf(&fileName, "segmenti/%s%d", PREFISSO, segmento);
-    // printf("%s\n", fileName);
-    FILE *fileSegmento = fopen(fileName, "r+");
-    if (fileSegmento == NULL)
-        printf("Fail segmento %i\n", segmento);
+	sprintf(&fileName, "segmenti/%s%d", PREFISSO, segmento);
 
-    // if(fgetc(fileSegmento) == '0') {
-    // 	// Mi riposiziono all'inizio del file
-    // 	fseek(fileSegmento, 0, SEEK_SET);
-    fputc('1', fileSegmento);
+	FILE *fileSegmento = fopen(fileName, "r+");
+	if (fileSegmento == NULL) printf("Fail segmento %i\n", segmento);
 
-    // 	fclose(fileSegmento);
+	fputc('1', fileSegmento);
 
-    // 	return true;
-    // }
-
-    fclose(fileSegmento);
-    return false;
+	fclose(fileSegmento);
+	return false;
 }
 
-// Mette a 0 il segmento e lo "libera"
-void freeSegmento(int segmento){
+// Mette a 0 il segmento liberandolo
+void freeSegmento(int segmento) {
 
     char *fileName;
     asprintf(&fileName, "segmenti/%s%d", PREFISSO, segmento);
@@ -101,8 +99,9 @@ void freeSegmento(int segmento){
     fclose(fileSegmento);
 }
 
-bool isLettera(char daTestare){
+// Un metodo helper per verificare se un certo carattere e' una lettera o meno
+bool isLettera(char daTestare) {
 
-    return (daTestare >= 'A' && daTestare <= 'Z') ||
-           (daTestare >= 'a' && daTestare <= 'z');
+	return ( daTestare >= 'A' && daTestare <= 'Z' ) || 
+			( daTestare >= 'a' && daTestare <= 'z' );
 }
