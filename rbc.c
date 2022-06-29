@@ -199,6 +199,7 @@ bool isRichiestaOccupazione(char *richiesta) {
 
 void gestisciOccupazione(int clientFd, char* messaggio) {
 
+    // Salto la prima lettera
 	messaggio++;
 	segmenti[strtol(messaggio, NULL, 10) - 1] = true;
 
