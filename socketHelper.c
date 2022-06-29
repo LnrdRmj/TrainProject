@@ -48,7 +48,7 @@ int creaConnessioneAServer(const char* serverName) {
 		int serverLen = sizeof(registro);
 		result = connect(serverFd, (struct sockaddr*) &registro, serverLen);
 		if(result == -1) {
-			printf("coneessione a %s non riuscita\n", serverName);
+			// printf("connessione a %s non riuscita\n", serverName);
 			sleep(1);
 		}
 	}while(result == -1);

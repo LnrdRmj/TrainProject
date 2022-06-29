@@ -110,7 +110,7 @@ void gestisciTreno(int clientFd, char buffer[1024]){
 
     char *cammino = malloc(MAX_LUNGHEZZA_CAMMINO);
     getCammino(cammino, numeroTreno, mappa);
-    printf("cammino %s\n", cammino);
+    
     write(clientFd, cammino, strlen(cammino) + 1);
 
     close(clientFd);

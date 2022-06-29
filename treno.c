@@ -15,7 +15,7 @@
 #define ETCS1 "ETCS1"
 #define ETCS2 "ETCS2"
 #define PREFISSO_FILE_SEGMENTO "MA"
-#define DEBUG true
+#define DEBUG false
 #define SLEEP_TIME 1
 
 // typedef bool (*politicaSegmento) (int, int);
@@ -107,6 +107,8 @@ char* getCammino(char *mappa){
 }
 // lnumeroTreno
 void startAttraversata(){
+
+	printf("Il treno %li parte\n", numeroTreno);
 
 	// Questo array conterra' il percorso sottoforma di array
 	char *passiCammino[10];

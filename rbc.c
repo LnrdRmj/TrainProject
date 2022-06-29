@@ -14,9 +14,8 @@
 #define SERVER_QUEUE_LENGTH 10
 #define NUMERO_TRATTE 16
 #define NUMERO_TRENI 5
-#define NUMERO_STAZIONI 8
 #define SERVER_REGISTRO "serveRegistro"
-#define DEBUG true
+#define DEBUG false
 
 void setup(char*);
 void cicloDiVita(struct pollfd*, int, int);
@@ -32,7 +31,6 @@ void gestisciRilascio(int, char *);
 char* getPercorsi(int, char *);
 
 bool segmenti[NUMERO_TRATTE];
-int stazioni[NUMERO_STAZIONI];
 FILE* logFile;
 char* mappa;
 
@@ -86,16 +84,11 @@ void setup(char* nomeMappa) {
 		segmenti[i] = false;
 	}
 
-	// Inizializzo lo stato delle stazioni
-	for (int i = 0; i < NUMERO_STAZIONI; ++i){
-		stazioni[i] = 0;
-	}
-
 	logFile = creaFileLogServerRBC();
 
 	int registroFd = creaConnessioneAServer(SERVER_REGISTRO);
 	mappa = getPercorsi(registroFd, nomeMappa);
-	printf("mappa totale %s\n", mappa);
+	if (DEBUG) printf("mappa totale %s\n", mappa);
 
 }
 
