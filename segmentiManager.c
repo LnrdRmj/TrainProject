@@ -17,8 +17,8 @@ void freeSegmento(int);
 // Crea e inizializza il file per memorizzare lo stato di un segmento 
 void creaFileSegmento(int numSegmento){
 
-    char *pathName;
-    asprintf(&pathName, "segmenti/%s%d", PREFISSO, numSegmento);
+    char *pathName = malloc(20);
+    sprintf(pathName, "segmenti/%s%d", PREFISSO, numSegmento);
 
     FILE *file = fopen(pathName, "w");
 
@@ -33,9 +33,8 @@ void creaFileSegmento(int numSegmento){
 // Legge il contenuto di un file segmento
 void readSegmento(int segmento, char* occupato){
 
-	char* fileName = malloc(3);
-
-	asprintf(&fileName, "segmenti/%s%d", PREFISSO, segmento);
+	char* fileName = malloc(20);
+	sprintf(fileName, "segmenti/%s%d", PREFISSO, segmento);
 	//printf("%s\n", fileName);
 	FILE* fileSegmento = fopen(fileName, "r");
 
@@ -60,9 +59,8 @@ int getNumeroSegmentoDaStringa(char* segmento) {
 // Ritorna vero se il segmento e' liberom, false altrimenti
 bool segmentoIsLibero(int segmento) {
 
-	char* fileName;
-
-	asprintf(&fileName, "segmenti/%s%d", PREFISSO, segmento);
+	char* fileName = malloc(20);
+	sprintf(fileName, "segmenti/%s%d", PREFISSO, segmento);
 	FILE* fileSegmento = fopen(fileName, "r");
 
     bool result = (fgetc(fileSegmento) == '0');
@@ -90,8 +88,8 @@ bool takeSegmento(int segmento) {
 // Mette a 0 il segmento liberandolo
 void freeSegmento(int segmento) {
 
-    char *fileName;
-    asprintf(&fileName, "segmenti/%s%d", PREFISSO, segmento);
+    char *fileName = malloc(20);
+    sprintf(fileName, "segmenti/%s%d", PREFISSO, segmento);
 
     FILE *fileSegmento = fopen(fileName, "w");
     fputc('0', fileSegmento);

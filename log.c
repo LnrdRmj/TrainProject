@@ -19,8 +19,8 @@ char* dataOraAttuali();
 // Log per i treni
 FILE* creaFileLogTreno(int numeroTreno) {
 
-	char* nomeLogFile = malloc(10);
-	asprintf(&nomeLogFile, "logs/T%i.log", numeroTreno);
+	char* nomeLogFile = malloc(20);
+	sprintf(nomeLogFile, "logs/T%i.log", numeroTreno);
 
 	return fopen(nomeLogFile, "w");
 
