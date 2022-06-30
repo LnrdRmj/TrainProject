@@ -16,7 +16,7 @@
 #define ETCS2 "ETCS2"
 #define PREFISSO_FILE_SEGMENTO "MA"
 #define DEBUG false
-#define SLEEP_TIME 1
+#define SLEEP_TIME 2
 
 // typedef bool (*politicaSegmento) (int, int);
 typedef void (*politicaRilascio) (int, int);
@@ -178,8 +178,6 @@ void gestisciStazione(char* segmento, char* previousSegment) {
 // Ritorna true se il treno e' passato al segmento/stazione successiva, false altrimento
 bool gestisciSegmento(char* segmento, char* previousSegment, char* prossimoSegmento) {
 
-	logStatoTreno(segmento, prossimoSegmento, logFile);
-
 	int numeroSegmento = getNumeroSegmentoDaStringa(segmento);
 
 	// Libero se e' il passo precedente era un segmento
@@ -190,9 +188,12 @@ bool gestisciSegmento(char* segmento, char* previousSegment, char* prossimoSegme
 	if(isSegmentoLibero(numeroSegmento, serverRBC) == true){
 
 		takeSegmento(numeroSegmento);
+		if(DEBUG) printf("Il treno %li ha occupato il segmento %s\n", numeroTreno, segmento);
 
 		if(serverRBC != -1)
 			takeSegmentoRBC(numeroSegmento, serverRBC);
+
+		logStatoTreno(segmento, prossimoSegmento, logFile);
 
 		// Il treno puo' continuare il suo cammino
 		return true;
@@ -200,7 +201,9 @@ bool gestisciSegmento(char* segmento, char* previousSegment, char* prossimoSegme
 	}
 	else {
 
-		logTrenoBloccato(segmento, logFile);
+		if(DEBUG) printf("Il treno %li si e' bloccato sul segmento %s\n", numeroTreno, previousSegment);
+
+		logTrenoBloccato(previousSegment, logFile);
 		// Il treno si e' bloccato
 		return false;
 
